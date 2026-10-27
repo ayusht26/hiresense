@@ -93,7 +93,7 @@ For questions regarding data processing or to exercise candidate rights, contact
   },
 ];
 
-export function PrivacyPage() {
+function PrivacyPage() {
   return (
     <PageShell>
       <section className="container-x">

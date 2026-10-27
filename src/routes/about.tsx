@@ -73,7 +73,7 @@ const founders: Founder[] = [
   },
 ];
 
-export function AboutPage() {
+function AboutPage() {
   return (
     <PageShell>
       {/* Hero statement */}
