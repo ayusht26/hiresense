@@ -78,7 +78,6 @@ export function Footer() {
             <h3 className="mb-3 text-[14px] font-semibold">Product</h3>
             <ul className="space-y-2 text-inverse-muted">
               <li><a className="hover:text-inverse-foreground" href="#how">How it works</a></li>
-              <li><a className="hover:text-inverse-foreground" href="#principles">Principles</a></li>
               <li><a className="hover:text-inverse-foreground" href="#faq">FAQ</a></li>
             </ul>
           </nav>

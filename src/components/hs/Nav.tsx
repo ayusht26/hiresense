@@ -16,7 +16,6 @@ export function Logomark({ dark = false }: { dark?: boolean }) {
 
 const links = [
   { href: "#how", label: "How it works" },
-  { href: "#principles", label: "Principles" },
   { href: "#faq", label: "FAQ" },
 ];
 
