@@ -5,3 +5,10 @@ timestamps
 1:11:40
 1:27:22
 
+
+some more changes
+- change the favicon
+- change the logo for the product
+- Built so a person can check the work. - this section in bento box
+- clicking top links in the navbar should work smoothly
+- make the about us, contact us, and privacy policy page (they should be in the footer)

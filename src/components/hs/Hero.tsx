@@ -78,16 +78,7 @@ export function Hero() {
       <motion.div aria-hidden className="dot-grid-bright absolute inset-0" style={{ maskImage: mask, WebkitMaskImage: mask }} />
 
       <div className="container-x relative flex flex-col items-center text-center">
-        <motion.span
-          initial={{ opacity: 0, y: reduce ? 0 : 12 }}
-          animate={ready ? { opacity: 1, y: 0 } : {}}
-          transition={t(0)}
-          className="inline-flex h-8 items-center rounded-full bg-accent px-4 text-[13px] font-semibold text-accent-foreground"
-        >
-          Early access
-        </motion.span>
-
-        <h1 className="text-display mt-8 max-w-[1100px]">
+        <h1 className="text-display max-w-[1100px]">
           {words.map((w, i) => (
             <span key={w} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
               <motion.span

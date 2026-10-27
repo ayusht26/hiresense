@@ -1,4 +1,14 @@
-import { AnimatePresence, LayoutGroup, motion, useMotionValueEvent, useReducedMotion, useScroll } from "framer-motion";
+import {
+  AnimatePresence,
+  LayoutGroup,
+  animate,
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EASE, Reveal } from "./motion";
 
@@ -20,44 +30,256 @@ const steps = [
   },
 ];
 
-function Hl({ children, delay }: { children: string; delay: number }) {
-  return (
-    <span className="relative inline-block px-0.5">
-      <motion.span
-        aria-hidden
-        className="absolute inset-0 origin-left rounded-[4px] bg-field"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ duration: 0.6, ease: EASE, delay }}
-      />
-      <span className="relative text-foreground">{children}</span>
-    </span>
-  );
-}
-
 function MatchMock() {
+  const reduce = useReducedMotion();
+  const [phase, setPhase] = useState(reduce ? 3 : 0);
+  const [lineActive, setLineActive] = useState<{ 1: boolean; 2: boolean; 3: boolean }>({
+    1: false,
+    2: false,
+    3: false,
+  });
+
+  // State machine loop
+  useEffect(() => {
+    if (reduce) {
+      setPhase(3);
+      setLineActive({ 1: true, 2: true, 3: true });
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const runCycle = () => {
+      // 0: Resting document
+      setPhase(0);
+      setLineActive({ 1: false, 2: false, 3: false });
+
+      // 1: Scan begins
+      timers.push(setTimeout(() => setPhase(1), 500));
+
+      // Key phrase highlights as beam moves down
+      timers.push(
+        setTimeout(() => setLineActive((prev) => ({ ...prev, 1: true })), 1200)
+      );
+      timers.push(
+        setTimeout(() => setLineActive((prev) => ({ ...prev, 2: true })), 1900)
+      );
+      timers.push(
+        setTimeout(() => setLineActive((prev) => ({ ...prev, 3: true })), 2600)
+      );
+
+      // 2: Scoring phase
+      timers.push(setTimeout(() => setPhase(2), 3300));
+
+      // 3: Hold completed state
+      timers.push(setTimeout(() => setPhase(3), 6000));
+
+      // Loop after 8400ms
+      timers.push(setTimeout(runCycle, 8400));
+    };
+
+    runCycle();
+    return () => timers.forEach(clearTimeout);
+  }, [reduce]);
+
+  // Rolling score counter
+  const scoreMotion = useMotionValue(reduce ? 92 : 0);
+  const scoreRounded = useTransform(scoreMotion, (v) => Math.round(v).toString());
+
+  useEffect(() => {
+    if (reduce) {
+      scoreMotion.set(92);
+      return;
+    }
+    const isScoring = phase >= 2 && phase <= 3;
+    const ctrl = animate(scoreMotion, isScoring ? 92 : 0, {
+      duration: isScoring ? 1.3 : 0.4,
+      ease: EASE,
+    });
+    return () => ctrl.stop();
+  }, [phase, reduce, scoreMotion]);
+
+  const isScored = phase >= 2;
+
   return (
-    <div className="flex h-full flex-col justify-center gap-8 p-6 md:p-10">
-      <div className="text-[12px] font-semibold text-muted-foreground">resume.pdf · experience</div>
-      <p className="text-[17px] leading-relaxed text-muted-foreground">
-        Designed and <Hl delay={0.3}>built REST services with FastAPI</Hl> for an internal billing platform, and{" "}
-        <Hl delay={0.6}>wrote async endpoints in Python</Hl> serving the mobile team.
-      </p>
-      <div className="flex items-center gap-3">
-        <motion.span
-          className="h-px flex-1 origin-left bg-hairline-strong"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.7, ease: EASE, delay: 0.9 }}
-        />
-        <motion.span
-          className="rounded-full border border-hairline-strong px-4 py-1.5 text-[14px] font-semibold"
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 18, delay: 1.5 }}
-        >
-          FastAPI: matched
-        </motion.span>
+    <div className="relative flex h-full flex-col justify-between overflow-hidden bg-surface p-6 sm:p-8 text-left select-none">
+      {/* Top Document Bar */}
+      <div className="flex items-center justify-between border-b border-hairline pb-4 text-[11px] font-mono text-muted-foreground">
+        <div className="flex items-center gap-2.5">
+          <svg className="h-3.5 w-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          <span className="font-medium text-foreground">rohan_sharma_resume.pdf</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span
+              className={`absolute inline-flex h-full w-full rounded-full bg-foreground transition-opacity ${
+                phase === 1 ? "animate-ping opacity-75" : "opacity-0"
+              }`}
+            />
+            <span
+              className={`relative inline-flex h-2 w-2 rounded-full ${
+                phase === 1 ? "bg-foreground" : isScored ? "bg-foreground" : "bg-muted-foreground/40"
+              }`}
+            />
+          </span>
+          <span className="text-[10px] tracking-wider uppercase text-muted-foreground">
+            {phase === 0 ? "Ready to parse" : phase === 1 ? "OCR Scanning..." : "3 Source Matches"}
+          </span>
+        </div>
+      </div>
+
+      {/* Resume Document Canvas with Scanning Beam */}
+      <div className="relative my-auto py-4">
+        {/* Laser Scan Beam */}
+        {!reduce && (
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-8 top-0 h-16 origin-top z-10"
+            initial={{ y: "0%", opacity: 0 }}
+            animate={
+              phase === 1
+                ? { y: ["0%", "260%"], opacity: [0, 1, 1, 0] }
+                : { y: "0%", opacity: 0 }
+            }
+            transition={
+              phase === 1
+                ? { duration: 2.5, ease: "linear" }
+                : { duration: 0 }
+            }
+          >
+            <div className="h-full w-full bg-gradient-to-t from-foreground/15 to-transparent" />
+            <div className="relative h-px w-full bg-foreground shadow-[0_0_8px_rgba(255,255,255,0.4)]">
+              <span className="absolute left-2 -top-[3px] h-[7px] w-[7px] rounded-full bg-foreground" />
+              <span className="absolute right-2 -top-[3px] h-[7px] w-[7px] rounded-full bg-foreground" />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Candidate Resume Header */}
+        <div>
+          <h4 className="text-[18px] font-[650] text-foreground tracking-tight">Rohan Sharma</h4>
+          <p className="mt-0.5 text-[12.5px] text-muted-foreground">Senior Backend Engineer · 6 years experience</p>
+        </div>
+
+        <div className="my-4 h-px w-full bg-hairline" />
+
+        {/* Experience Section */}
+        <div className="space-y-4">
+          {/* Bullet 1 */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-1 font-mono text-[10px] text-muted-foreground/50">01</span>
+              <p className="text-[13px] sm:text-[13.5px] leading-relaxed text-muted-foreground">
+                Engineered core REST services with{" "}
+                <span
+                  className={`inline-block rounded-[4px] px-2 py-0.5 transition-all duration-300 ${
+                    lineActive[1]
+                      ? "bg-white/12 text-foreground font-medium border border-white/20"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  FastAPI & Python
+                </span>
+                , handling 14k req/sec under peak load.
+              </p>
+            </div>
+            <motion.span
+              initial={false}
+              animate={{ opacity: lineActive[1] ? 1 : 0, scale: lineActive[1] ? 1 : 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="shrink-0 rounded-full border border-hairline bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
+            >
+              FastAPI: matched
+            </motion.span>
+          </div>
+
+          {/* Bullet 2 */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-1 font-mono text-[10px] text-muted-foreground/50">02</span>
+              <p className="text-[13px] sm:text-[13.5px] leading-relaxed text-muted-foreground">
+                Architected high-availability data models in{" "}
+                <span
+                  className={`inline-block rounded-[4px] px-2 py-0.5 transition-all duration-300 ${
+                    lineActive[2]
+                      ? "bg-white/12 text-foreground font-medium border border-white/20"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  PostgreSQL
+                </span>
+                {" "}with automated read replicas.
+              </p>
+            </div>
+            <motion.span
+              initial={false}
+              animate={{ opacity: lineActive[2] ? 1 : 0, scale: lineActive[2] ? 1 : 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="shrink-0 rounded-full border border-hairline bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
+            >
+              Postgres: matched
+            </motion.span>
+          </div>
+
+          {/* Bullet 3 */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-1 font-mono text-[10px] text-muted-foreground/50">03</span>
+              <p className="text-[13px] sm:text-[13.5px] leading-relaxed text-muted-foreground">
+                Automated continuous deployments using{" "}
+                <span
+                  className={`inline-block rounded-[4px] px-2 py-0.5 transition-all duration-300 ${
+                    lineActive[3]
+                      ? "bg-white/12 text-foreground font-medium border border-white/20"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  Docker on AWS
+                </span>
+                {" "}ECS clusters.
+              </p>
+            </div>
+            <motion.span
+              initial={false}
+              animate={{ opacity: lineActive[3] ? 1 : 0, scale: lineActive[3] ? 1 : 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="shrink-0 rounded-full border border-hairline bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
+            >
+              Docker/AWS: matched
+            </motion.span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Match Score Panel */}
+      <div className="border-t border-hairline pt-4">
+        <div className="flex items-baseline justify-between">
+          <div>
+            <span className="text-[11px] font-mono tracking-wider text-muted-foreground uppercase">
+              Resume Compatibility Score
+            </span>
+            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+              3 of 3 mandatory requirements verified with line receipts.
+            </p>
+          </div>
+          <span className="tabular text-h4 font-[650] text-foreground">
+            <motion.span>{scoreRounded}</motion.span>
+            <span className="text-[13px] font-normal text-muted-foreground"> / 100</span>
+          </span>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mt-3 h-[2px] w-full overflow-hidden rounded-full bg-hairline">
+          <motion.div
+            className="h-full origin-left bg-foreground"
+            initial={{ scaleX: reduce ? 0.92 : 0 }}
+            animate={{ scaleX: isScored ? 0.92 : 0 }}
+            transition={{ duration: reduce ? 0 : isScored ? 1.3 : 0.4, ease: EASE }}
+          />
+        </div>
       </div>
     </div>
   );
