@@ -3,6 +3,7 @@ import {
   LayoutGroup,
   animate,
   motion,
+  useInView,
   useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
@@ -30,7 +31,7 @@ const steps = [
   },
 ];
 
-function MatchMock() {
+function MatchMock({ start = true }: { start?: boolean }) {
   const reduce = useReducedMotion();
   const [phase, setPhase] = useState(reduce ? 3 : 0);
   const [lineActive, setLineActive] = useState<{ 1: boolean; 2: boolean; 3: boolean }>({
@@ -47,6 +48,12 @@ function MatchMock() {
       return;
     }
 
+    if (!start) {
+      setPhase(0);
+      setLineActive({ 1: false, 2: false, 3: false });
+      return;
+    }
+
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     const runCycle = () => {
@@ -57,30 +64,30 @@ function MatchMock() {
       // 1: Scan begins
       timers.push(setTimeout(() => setPhase(1), 500));
 
-      // Key phrase highlights as beam moves down
+      // Key phrase highlights as beam moves down (delayed by 0.5s)
       timers.push(
-        setTimeout(() => setLineActive((prev) => ({ ...prev, 1: true })), 1200)
+        setTimeout(() => setLineActive((prev) => ({ ...prev, 1: true })), 1700)
       );
       timers.push(
-        setTimeout(() => setLineActive((prev) => ({ ...prev, 2: true })), 1900)
+        setTimeout(() => setLineActive((prev) => ({ ...prev, 2: true })), 2400)
       );
       timers.push(
-        setTimeout(() => setLineActive((prev) => ({ ...prev, 3: true })), 2600)
+        setTimeout(() => setLineActive((prev) => ({ ...prev, 3: true })), 3100)
       );
 
       // 2: Scoring phase
-      timers.push(setTimeout(() => setPhase(2), 3300));
+      timers.push(setTimeout(() => setPhase(2), 3800));
 
       // 3: Hold completed state
-      timers.push(setTimeout(() => setPhase(3), 6000));
+      timers.push(setTimeout(() => setPhase(3), 6600));
 
-      // Loop after 8400ms
-      timers.push(setTimeout(runCycle, 8400));
+      // Loop after 9000ms
+      timers.push(setTimeout(runCycle, 9000));
     };
 
     runCycle();
     return () => timers.forEach(clearTimeout);
-  }, [reduce]);
+  }, [start, reduce]);
 
   // Rolling score counter
   const scoreMotion = useMotionValue(reduce ? 92 : 0);
@@ -146,7 +153,7 @@ function MatchMock() {
             }
             transition={
               phase === 1
-                ? { duration: 2.5, ease: "linear" }
+                ? { duration: 3.1, ease: "linear" }
                 : { duration: 0 }
             }
           >
@@ -174,23 +181,39 @@ function MatchMock() {
               <span className="mt-1 font-mono text-[10px] text-muted-foreground/50">01</span>
               <p className="text-[13px] sm:text-[13.5px] leading-relaxed text-muted-foreground">
                 Engineered core REST services with{" "}
-                <span
-                  className={`inline-block rounded-[4px] px-2 py-0.5 transition-all duration-300 ${
+                <motion.span
+                  initial={false}
+                  animate={
                     lineActive[1]
-                      ? "bg-white/12 text-foreground font-medium border border-white/20"
-                      : "text-muted-foreground"
-                  }`}
+                      ? {
+                          scale: [1, 1.08, 1],
+                          backgroundColor: "rgba(16, 185, 129, 0.16)",
+                          borderColor: "rgba(52, 211, 153, 0.4)",
+                          color: "#34d399",
+                        }
+                      : {
+                          scale: 1,
+                          backgroundColor: "transparent",
+                          borderColor: "transparent",
+                          color: "var(--muted-foreground)",
+                        }
+                  }
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="inline-block rounded-[4px] px-2 py-0.5 font-medium border"
                 >
                   FastAPI & Python
-                </span>
+                </motion.span>
                 , handling 14k req/sec under peak load.
               </p>
             </div>
             <motion.span
               initial={false}
-              animate={{ opacity: lineActive[1] ? 1 : 0, scale: lineActive[1] ? 1 : 0.95 }}
-              transition={{ duration: 0.3 }}
-              className="shrink-0 rounded-full border border-hairline bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
+              animate={{
+                opacity: lineActive[1] ? 1 : 0,
+                scale: lineActive[1] ? [0.85, 1.04, 1] : 0.85,
+              }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="shrink-0 rounded-full border border-hairline-strong bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
             >
               FastAPI: matched
             </motion.span>
@@ -202,23 +225,39 @@ function MatchMock() {
               <span className="mt-1 font-mono text-[10px] text-muted-foreground/50">02</span>
               <p className="text-[13px] sm:text-[13.5px] leading-relaxed text-muted-foreground">
                 Architected high-availability data models in{" "}
-                <span
-                  className={`inline-block rounded-[4px] px-2 py-0.5 transition-all duration-300 ${
+                <motion.span
+                  initial={false}
+                  animate={
                     lineActive[2]
-                      ? "bg-white/12 text-foreground font-medium border border-white/20"
-                      : "text-muted-foreground"
-                  }`}
+                      ? {
+                          scale: [1, 1.08, 1],
+                          backgroundColor: "rgba(16, 185, 129, 0.16)",
+                          borderColor: "rgba(52, 211, 153, 0.4)",
+                          color: "#34d399",
+                        }
+                      : {
+                          scale: 1,
+                          backgroundColor: "transparent",
+                          borderColor: "transparent",
+                          color: "var(--muted-foreground)",
+                        }
+                  }
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="inline-block rounded-[4px] px-2 py-0.5 font-medium border"
                 >
                   PostgreSQL
-                </span>
+                </motion.span>
                 {" "}with automated read replicas.
               </p>
             </div>
             <motion.span
               initial={false}
-              animate={{ opacity: lineActive[2] ? 1 : 0, scale: lineActive[2] ? 1 : 0.95 }}
-              transition={{ duration: 0.3 }}
-              className="shrink-0 rounded-full border border-hairline bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
+              animate={{
+                opacity: lineActive[2] ? 1 : 0,
+                scale: lineActive[2] ? [0.85, 1.04, 1] : 0.85,
+              }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="shrink-0 rounded-full border border-hairline-strong bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
             >
               Postgres: matched
             </motion.span>
@@ -230,23 +269,39 @@ function MatchMock() {
               <span className="mt-1 font-mono text-[10px] text-muted-foreground/50">03</span>
               <p className="text-[13px] sm:text-[13.5px] leading-relaxed text-muted-foreground">
                 Automated continuous deployments using{" "}
-                <span
-                  className={`inline-block rounded-[4px] px-2 py-0.5 transition-all duration-300 ${
+                <motion.span
+                  initial={false}
+                  animate={
                     lineActive[3]
-                      ? "bg-white/12 text-foreground font-medium border border-white/20"
-                      : "text-muted-foreground"
-                  }`}
+                      ? {
+                          scale: [1, 1.08, 1],
+                          backgroundColor: "rgba(16, 185, 129, 0.16)",
+                          borderColor: "rgba(52, 211, 153, 0.4)",
+                          color: "#34d399",
+                        }
+                      : {
+                          scale: 1,
+                          backgroundColor: "transparent",
+                          borderColor: "transparent",
+                          color: "var(--muted-foreground)",
+                        }
+                  }
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="inline-block rounded-[4px] px-2 py-0.5 font-medium border"
                 >
                   Docker on AWS
-                </span>
+                </motion.span>
                 {" "}ECS clusters.
               </p>
             </div>
             <motion.span
               initial={false}
-              animate={{ opacity: lineActive[3] ? 1 : 0, scale: lineActive[3] ? 1 : 0.95 }}
-              transition={{ duration: 0.3 }}
-              className="shrink-0 rounded-full border border-hairline bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
+              animate={{
+                opacity: lineActive[3] ? 1 : 0,
+                scale: lineActive[3] ? [0.85, 1.04, 1] : 0.85,
+              }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="shrink-0 rounded-full border border-hairline-strong bg-field px-2.5 py-0.5 text-[11px] font-medium text-foreground whitespace-nowrap"
             >
               Docker/AWS: matched
             </motion.span>
@@ -294,74 +349,249 @@ const candidates = [
   { id: "K. Bose", s: 47 },
 ];
 
-function ScreenMock() {
+function ScreenMock({ start = true }: { start?: boolean }) {
   const reduce = useReducedMotion();
   const [th, setTh] = useState(reduce ? 70 : 40);
+  const [isScanning, setIsScanning] = useState(false);
+  const [revealed, setRevealed] = useState<boolean[]>(
+    reduce ? [true, true, true, true, true, true] : [false, false, false, false, false, false]
+  );
+  const [showDivider, setShowDivider] = useState(reduce);
+
   useEffect(() => {
-    if (reduce) return;
-    const t = setTimeout(() => setTh(70), 700);
-    return () => clearTimeout(t);
-  }, [reduce]);
-  const above = candidates.filter((c) => c.s >= th);
-  const below = candidates.filter((c) => c.s < th);
+    if (reduce) {
+      setTh(70);
+      setRevealed([true, true, true, true, true, true]);
+      setShowDivider(true);
+      return;
+    }
+
+    if (!start) {
+      setTh(40);
+      setIsScanning(false);
+      setRevealed([false, false, false, false, false, false]);
+      setShowDivider(false);
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const runCycle = () => {
+      // 0: Reset to neutral uncolored state
+      setTh(40);
+      setIsScanning(false);
+      setRevealed([false, false, false, false, false, false]);
+      setShowDivider(false);
+
+      // 1: Scan begins, threshold knob glides to 70
+      timers.push(
+        setTimeout(() => {
+          setTh(70);
+          setIsScanning(true);
+        }, 700)
+      );
+
+      // 2: Sequential reveal as laser scan sweeps top to bottom
+      timers.push(
+        setTimeout(() => {
+          setRevealed((prev) => {
+            const next = [...prev];
+            next[0] = true;
+            return next;
+          });
+        }, 950)
+      );
+
+      timers.push(
+        setTimeout(() => {
+          setRevealed((prev) => {
+            const next = [...prev];
+            next[1] = true;
+            return next;
+          });
+        }, 1200)
+      );
+
+      timers.push(
+        setTimeout(() => {
+          setRevealed((prev) => {
+            const next = [...prev];
+            next[2] = true;
+            return next;
+          });
+        }, 1450)
+      );
+
+      // Below threshold divider expands
+      timers.push(
+        setTimeout(() => {
+          setShowDivider(true);
+        }, 1650)
+      );
+
+      timers.push(
+        setTimeout(() => {
+          setRevealed((prev) => {
+            const next = [...prev];
+            next[3] = true;
+            return next;
+          });
+        }, 1850)
+      );
+
+      timers.push(
+        setTimeout(() => {
+          setRevealed((prev) => {
+            const next = [...prev];
+            next[4] = true;
+            return next;
+          });
+        }, 2100)
+      );
+
+      timers.push(
+        setTimeout(() => {
+          setRevealed((prev) => {
+            const next = [...prev];
+            next[5] = true;
+            return next;
+          });
+        }, 2350)
+      );
+
+      // End scan beam
+      timers.push(
+        setTimeout(() => {
+          setIsScanning(false);
+        }, 2650)
+      );
+
+      // Hold complete state, then loop at 8000ms
+      timers.push(setTimeout(runCycle, 8000));
+    };
+
+    runCycle();
+
+    return () => timers.forEach(clearTimeout);
+  }, [start, reduce]);
+
   return (
-    <div className="flex h-full flex-col justify-center gap-5 p-6 md:p-10">
+    <div className="flex h-full flex-col justify-center gap-5 p-6 md:p-10 text-left select-none">
+      {/* Minimal Threshold Bar */}
       <div>
         <div className="mb-3 flex justify-between text-[12px] text-muted-foreground">
           <span className="font-semibold">Threshold</span>
           <span className="tabular">{th}</span>
         </div>
         <div className="relative h-[3px] rounded-full bg-hairline">
-          <motion.div className="absolute inset-0" initial={false} animate={{ x: `${th}%` }} transition={{ duration: 1.2, ease: EASE }}>
+          <motion.div
+            className="absolute inset-0"
+            initial={false}
+            animate={{ x: `${th}%` }}
+            transition={{ duration: 1.2, ease: EASE }}
+          >
             <span className="absolute -left-2 -top-[7px] h-4 w-4 rounded-full bg-foreground" />
           </motion.div>
         </div>
       </div>
-      <LayoutGroup>
+
+      {/* Candidate List with Top-to-Bottom Scan Effect */}
+      <div className="relative">
+        {/* Laser Scan Beam */}
+        {!reduce && (
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-2 top-0 z-10 h-10 origin-top"
+            initial={{ y: "0%", opacity: 0 }}
+            animate={
+              isScanning
+                ? { y: ["0%", "520%"], opacity: [0, 1, 1, 0] }
+                : { y: "0%", opacity: 0 }
+            }
+            transition={
+              isScanning
+                ? { duration: 1.85, ease: "easeInOut" }
+                : { duration: 0 }
+            }
+          >
+            <div className="h-full w-full bg-gradient-to-t from-foreground/12 to-transparent" />
+            <div className="relative h-px w-full bg-foreground shadow-[0_0_8px_rgba(255,255,255,0.4)]">
+              <span className="absolute left-1 -top-[2px] h-[5px] w-[5px] rounded-full bg-foreground" />
+              <span className="absolute right-1 -top-[2px] h-[5px] w-[5px] rounded-full bg-foreground" />
+            </div>
+          </motion.div>
+        )}
+
         <ul className="space-y-1.5">
-          {above.map((c) => (
-            <motion.li
-              layout
-              key={c.id}
-              transition={{ duration: 0.7, ease: EASE }}
-              className="flex items-center justify-between rounded-tile border border-emerald-500/20 bg-field px-4 py-2 text-[14px]"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
-                <span className="text-foreground">{c.id}</span>
+          {candidates.map((c, i) => {
+            const isAbove = c.s >= 70;
+            const isRevealed = revealed[i];
+
+            return (
+              <div key={c.id}>
+                {i === 3 && (
+                  <motion.li
+                    initial={false}
+                    animate={
+                      showDivider
+                        ? { height: "auto", opacity: 1, marginTop: 4, marginBottom: 4 }
+                        : { height: 0, opacity: 0, marginTop: 0, marginBottom: 0 }
+                    }
+                    transition={{ duration: 0.35, ease: EASE }}
+                    className="overflow-hidden flex items-center gap-3 py-1 text-[12px] text-muted-foreground list-none"
+                  >
+                    <span className="h-px flex-1 bg-hairline-strong" />
+                    Below threshold
+                    <span className="h-px flex-1 bg-hairline-strong" />
+                  </motion.li>
+                )}
+
+                <li
+                  className={`flex items-center justify-between rounded-tile border px-4 py-2 text-[14px] transition-colors duration-400 ${
+                    !isRevealed
+                      ? "border-hairline bg-field/50 text-foreground/90 font-normal"
+                      : isAbove
+                      ? "border-emerald-500/25 bg-emerald-500/[0.04] text-foreground font-medium"
+                      : "border-rose-500/15 bg-rose-500/[0.03] text-muted-foreground font-normal"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className={`h-1.5 w-1.5 shrink-0 rounded-full transition-all duration-400 ${
+                        !isRevealed
+                          ? "bg-muted-foreground/35"
+                          : isAbove
+                          ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
+                          : "bg-rose-400/80 shadow-[0_0_6px_rgba(251,113,133,0.3)]"
+                      }`}
+                    />
+                    <span className={isRevealed && isAbove ? "text-foreground font-medium" : ""}>
+                      {c.id}
+                    </span>
+                  </div>
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[12px] tabular transition-all duration-400 ${
+                      !isRevealed
+                        ? "border-hairline bg-field font-medium text-muted-foreground"
+                        : isAbove
+                        ? "border-emerald-500/25 bg-emerald-500/10 font-semibold text-emerald-400"
+                        : "border-rose-500/20 bg-rose-500/10 font-semibold text-rose-400/80"
+                    }`}
+                  >
+                    {c.s}
+                  </span>
+                </li>
               </div>
-              <span className="inline-flex items-center rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[12px] font-semibold tabular text-emerald-400">
-                {c.s}
-              </span>
-            </motion.li>
-          ))}
-          <motion.li layout key="line" transition={{ duration: 0.7, ease: EASE }} className="flex items-center gap-3 py-1 text-[12px] text-muted-foreground">
-            <span className="h-px flex-1 bg-hairline-strong" />
-            Below threshold
-            <span className="h-px flex-1 bg-hairline-strong" />
-          </motion.li>
-          {below.map((c) => (
-            <motion.li
-              layout
-              key={c.id}
-              transition={{ duration: 0.7, ease: EASE }}
-              className="flex items-center justify-between rounded-tile border border-rose-500/15 bg-rose-500/[0.03] px-4 py-2 text-[14px] text-muted-foreground"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400/80 shadow-[0_0_6px_rgba(251,113,133,0.3)]" />
-                <span>{c.id}</span>
-              </div>
-              <span className="inline-flex items-center rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[12px] font-semibold tabular text-rose-400/80">
-                {c.s}
-              </span>
-            </motion.li>
-          ))}
+            );
+          })}
         </ul>
-      </LayoutGroup>
+      </div>
+
+      {/* Recruiter Override Note */}
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: EASE, delay: 1.8 }}
+        initial={false}
+        animate={{ opacity: revealed[5] ? 1 : 0.5 }}
+        transition={{ duration: 0.5, ease: EASE }}
         className="rounded-tile border border-hairline px-4 py-2.5 text-[13px] text-muted-foreground"
       >
         Override recorded by recruiter · reason required
@@ -432,7 +662,7 @@ function renderTypedSegments(
   });
 }
 
-function InterviewMock() {
+function InterviewMock({ start = true }: { start?: boolean }) {
   const reduce = useReducedMotion();
   const [activeLang, setActiveLang] = useState(0);
   const [typedLength, setTypedLength] = useState(0);
@@ -447,6 +677,12 @@ function InterviewMock() {
   useEffect(() => {
     if (reduce) {
       setTypedLength(totalChars);
+      return;
+    }
+
+    if (!start) {
+      setTypedLength(0);
+      setActiveLang(0);
       return;
     }
 
@@ -470,7 +706,7 @@ function InterviewMock() {
       clearInterval(interval);
       if (pauseTimeout) clearTimeout(pauseTimeout);
     };
-  }, [activeLang, totalChars, reduce]);
+  }, [activeLang, totalChars, reduce, start]);
 
   const waveformBars = useMemo(
     () =>
@@ -492,10 +728,16 @@ function InterviewMock() {
       <div className="flex items-center justify-between border-b border-hairline px-6 py-3 text-[10.5px] font-mono tracking-wider text-muted-foreground">
         <span>INTERVIEW / ILLUSTRATIVE</span>
         <span className="flex items-center gap-2">
-          <span>TRANSCRIPT ACTIVE</span>
+          <span>{start ? "TRANSCRIPT ACTIVE" : "AWAITING START"}</span>
           <span className="relative flex h-2 w-2 items-center justify-center">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FACC15] opacity-50" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#FACC15]" />
+            {start && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FACC15] opacity-50" />
+            )}
+            <span
+              className={`relative inline-flex h-2 w-2 rounded-full ${
+                start ? "bg-[#FACC15]" : "bg-muted-foreground/40"
+              }`}
+            />
           </span>
         </span>
       </div>
@@ -533,7 +775,7 @@ function InterviewMock() {
                 key={i}
                 className="w-[2.5px] origin-center rounded-full bg-[#FACC15]"
                 style={{ height: "26px" }}
-                animate={{ scaleY: [b[0], b[1], b[2], b[0]] }}
+                animate={start ? { scaleY: [b[0], b[1], b[2], b[0]] } : { scaleY: 0.2 }}
                 transition={{
                   duration: 0.85 + (i % 6) * 0.1,
                   repeat: Infinity,
@@ -597,15 +839,39 @@ function InterviewMock() {
 
 const mocks = [MatchMock, ScreenMock, InterviewMock] as const;
 
+function MobileStepCard({ step, index }: { step: (typeof steps)[number]; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(cardRef, { amount: 0.25 });
+  const M = mocks[index] ?? MatchMock;
+
+  return (
+    <Reveal>
+      <h3 className="text-h3">
+        <span className="mr-3 text-muted-foreground">{step.n}</span>
+        {step.title}
+      </h3>
+      <p className="mt-3 text-muted-foreground">{step.body}</p>
+      <div ref={cardRef} className="mt-6 overflow-hidden rounded-card border border-hairline bg-surface">
+        <M start={isInView} />
+      </div>
+    </Reveal>
+  );
+}
+
 export function HowItWorks() {
+  const sectionRef = useRef<HTMLElement>(null);
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+
+  // In-view check: only start playing animations when user scrolls to this section
+  const isSectionInView = useInView(sectionRef, { amount: 0.15 });
+
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   useMotionValueEvent(scrollYProgress, "change", (v) => setActive(Math.min(2, Math.floor(v * 3))));
   const Mock = mocks[active] ?? MatchMock;
 
   return (
-    <section id="how" aria-labelledby="how-h" className="pt-[120px]">
+    <section ref={sectionRef} id="how" aria-labelledby="how-h" className="pt-[120px]">
       <Reveal className="container-x">
         <h2 id="how-h" className="text-h2 max-w-[700px]">Three stages. One audit trail.</h2>
       </Reveal>
@@ -665,7 +931,7 @@ export function HowItWorks() {
                   exit={{ opacity: 0, y: -24 }}
                   transition={{ duration: 0.5, ease: EASE }}
                 >
-                  <Mock />
+                  <Mock start={isSectionInView} />
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -675,22 +941,11 @@ export function HowItWorks() {
 
       {/* Mobile stacked */}
       <div className="container-x mt-12 space-y-16 min-[900px]:hidden">
-        {steps.map((s, i) => {
-          const M = mocks[i] ?? MatchMock;
-          return (
-            <Reveal key={s.n}>
-              <h3 className="text-h3">
-                <span className="mr-3 text-muted-foreground">{s.n}</span>
-                {s.title}
-              </h3>
-              <p className="mt-3 text-muted-foreground">{s.body}</p>
-              <div className="mt-6 overflow-hidden rounded-card border border-hairline bg-surface">
-                <M />
-              </div>
-            </Reveal>
-          );
-        })}
+        {steps.map((s, i) => (
+          <MobileStepCard key={s.n} step={s} index={i} />
+        ))}
       </div>
     </section>
   );
 }
+
