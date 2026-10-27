@@ -184,7 +184,10 @@ export function HeroVisual({
       setPhase(4);
       return;
     }
-    if (!start) return;
+    if (!start) {
+      setPhase(0);
+      return;
+    }
 
     let timers: ReturnType<typeof setTimeout>[] = [];
 

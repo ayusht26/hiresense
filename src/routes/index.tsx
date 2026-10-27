@@ -6,7 +6,6 @@ import { Nav } from "@/components/hs/Nav";
 import { Hero } from "@/components/hs/Hero";
 import { Statement } from "@/components/hs/Statement";
 import { HowItWorks } from "@/components/hs/HowItWorks";
-import { Marquee } from "@/components/hs/Marquee";
 import { Principles } from "@/components/hs/Principles";
 import { Faq } from "@/components/hs/Faq";
 import { FinalCta, Footer } from "@/components/hs/Closing";
@@ -44,7 +43,6 @@ function Index() {
         <Hero />
         <Statement />
         <HowItWorks />
-        <Marquee />
         <Principles />
         <Faq />
         <FinalCta />

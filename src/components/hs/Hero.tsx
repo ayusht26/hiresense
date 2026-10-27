@@ -1,12 +1,13 @@
 import {
   animate,
   motion,
+  useInView,
   useMotionTemplate,
   useMotionValue,
   useReducedMotion,
   useSpring,
 } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EASE, Magnetic, btnOutline, btnPrimary, useReady } from "./motion";
 import { HeroVisual } from "./HeroVisual";
 
@@ -16,11 +17,30 @@ export function Hero() {
   const ready = useReady();
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
+  const visualRef = useRef<HTMLDivElement>(null);
+  const isVisualInView = useInView(visualRef, { amount: 0.25 });
+  const [hasScrolled, setHasScrolled] = useState(false);
+
   const mx = useMotionValue(-400);
   const my = useMotionValue(-400);
   const sx = useSpring(mx, { stiffness: 120, damping: 20 });
   const sy = useSpring(my, { stiffness: 120, damping: 20 });
   const mask = useMotionTemplate`radial-gradient(220px circle at ${sx}px ${sy}px, black, transparent)`;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 30) {
+        setHasScrolled(true);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    if (window.scrollY > 30) {
+      setHasScrolled(true);
+    }
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const shouldStartVisual = ready && isVisualInView && (hasScrolled || window.scrollY > 30);
 
   useEffect(() => {
     if (window.matchMedia("(pointer: fine)").matches || reduce) return;
@@ -115,21 +135,50 @@ export function Hero() {
         </motion.div>
 
         <motion.div
+          ref={visualRef}
           initial={{ opacity: 0, y: reduce ? 0 : 40 }}
           animate={ready ? { opacity: 1, y: 0 } : {}}
           transition={{ ...t(0.75), duration: 1.1 }}
           className="relative mt-20 w-full max-w-[1040px]"
         >
-          <HeroVisual start={ready} />
+          <HeroVisual start={shouldStartVisual} />
         </motion.div>
       </div>
 
-      <div aria-hidden className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-[12px] text-muted-foreground">
-        Scroll
-        <span className="block h-10 w-px overflow-hidden">
-          <span className="animate-scroll-line block h-full w-px bg-foreground" />
+      <motion.a
+        href="#how"
+        initial={{ opacity: 0, y: 12 }}
+        animate={ready ? { opacity: 1, y: 0 } : {}}
+        transition={{ delay: 1.1, duration: 0.8 }}
+        className="group absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-[12px] text-muted-foreground transition-colors duration-200 hover:text-foreground"
+        aria-label="Scroll to see how it works"
+      >
+        <span className="text-[11px] font-medium tracking-[0.16em] uppercase transition-colors duration-200 group-hover:text-foreground">
+          Scroll
         </span>
-      </div>
+        <div className="flex h-8 w-[20px] justify-center rounded-full border border-hairline-strong bg-surface/40 pt-1.5 transition-colors duration-200 group-hover:border-foreground/50">
+          <motion.span
+            className="h-2 w-1 rounded-full bg-foreground"
+            animate={
+              reduce
+                ? {}
+                : {
+                    y: [0, 8, 12],
+                    opacity: [0, 1, 0],
+                  }
+            }
+            transition={
+              reduce
+                ? {}
+                : {
+                    duration: 1.8,
+                    repeat: Infinity,
+                    ease: [0.25, 1, 0.5, 1],
+                  }
+            }
+          />
+        </div>
+      </motion.a>
     </section>
   );
 }
