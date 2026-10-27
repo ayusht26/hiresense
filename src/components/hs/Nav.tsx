@@ -1,3 +1,4 @@
+import { Link, useRouterState } from "@tanstack/react-router";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { useRef, useState } from "react";
 import { EASE, btnPrimary } from "./motion";
@@ -15,14 +16,17 @@ export function Logomark({ dark = false }: { dark?: boolean }) {
 }
 
 const links = [
-  { href: "#how", label: "How it works" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#how", label: "How it works" },
+  { href: "/about", label: "About us", isRoute: true },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 export function Nav() {
   const { scrollY } = useScroll();
   const last = useRef(0);
   const [hidden, setHidden] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
   useMotionValueEvent(scrollY, "change", (v) => {
     const d = v - last.current;
     if (v < 80) setHidden(false);
@@ -39,22 +43,41 @@ export function Nav() {
     >
       <nav
         aria-label="Primary"
-        className="flex w-full max-w-[880px] items-center justify-between gap-4 rounded-full border border-hairline bg-surface py-2 pl-3 pr-2"
+        className="flex w-full max-w-[880px] items-center justify-between gap-4 rounded-full border border-hairline bg-surface py-2 pl-3 pr-2 shadow-2xl shadow-black/40"
       >
-        <a href="#top" className="flex items-center gap-2.5 rounded-full pr-2 font-semibold">
+        <Link to="/" className="flex items-center gap-2.5 rounded-full pr-2 font-semibold">
           <Logomark />
           <span className="hidden sm:inline">HireSense</span>
-        </a>
+        </Link>
         <ul className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
-            <li key={l.href}>
-              <a href={l.href} className="rounded-full px-4 py-2 text-[14px] font-semibold text-muted-foreground transition-colors hover:bg-field hover:text-foreground">
-                {l.label}
-              </a>
-            </li>
-          ))}
+          {links.map((l) => {
+            const isActive = l.isRoute && pathname === l.href;
+            return (
+              <li key={l.href}>
+                {l.isRoute ? (
+                  <Link
+                    to={l.href}
+                    className={`rounded-full px-4 py-2 text-[14px] font-semibold transition-colors ${
+                      isActive
+                        ? "bg-field text-foreground"
+                        : "text-muted-foreground hover:bg-field hover:text-foreground"
+                    }`}
+                  >
+                    {l.label}
+                  </Link>
+                ) : (
+                  <a
+                    href={l.href}
+                    className="rounded-full px-4 py-2 text-[14px] font-semibold text-muted-foreground transition-colors hover:bg-field hover:text-foreground"
+                  >
+                    {l.label}
+                  </a>
+                )}
+              </li>
+            );
+          })}
         </ul>
-        <a href="#join" className={`${btnPrimary} h-10 px-5 text-[14px]`}>
+        <a href="/#join" className={`${btnPrimary} h-10 px-5 text-[14px]`}>
           Request early access
         </a>
       </nav>

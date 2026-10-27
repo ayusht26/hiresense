@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import { EASE, Magnetic, Reveal, btnPrimary } from "./motion";
@@ -73,19 +74,19 @@ export function Footer() {
     <footer className="rounded-t-card bg-inverse text-inverse-foreground">
       <div className="container-x pb-8 pt-16">
         <div className="grid gap-10 md:grid-cols-[1fr_auto_auto] md:gap-20">
-          <p className="max-w-[320px] text-inverse-muted">AI-assisted hiring with a human in the loop.</p>
           <nav aria-label="Product">
             <h3 className="mb-3 text-[14px] font-semibold">Product</h3>
             <ul className="space-y-2 text-inverse-muted">
-              <li><a className="hover:text-inverse-foreground" href="#how">How it works</a></li>
-              <li><a className="hover:text-inverse-foreground" href="#faq">FAQ</a></li>
+              <li><a className="transition-colors hover:text-inverse-foreground" href="/#how">How it works</a></li>
+              <li><a className="transition-colors hover:text-inverse-foreground" href="/#faq">FAQ</a></li>
             </ul>
           </nav>
           <nav aria-label="Company">
             <h3 className="mb-3 text-[14px] font-semibold">Company</h3>
             <ul className="space-y-2 text-inverse-muted">
-              <li><a className="hover:text-inverse-foreground" href="mailto:hello@hiresense.online">Contact</a></li>
-              <li><a className="hover:text-inverse-foreground" href="#top">Privacy</a></li>
+              <li><Link to="/about" className="transition-colors hover:text-inverse-foreground">About us</Link></li>
+              <li><Link to="/contact" className="transition-colors hover:text-inverse-foreground">Contact us</Link></li>
+              <li><Link to="/privacy" className="transition-colors hover:text-inverse-foreground">Privacy policy</Link></li>
             </ul>
           </nav>
         </div>
