@@ -37,7 +37,7 @@ function Hl({ children, delay }: { children: string; delay: number }) {
 
 function MatchMock() {
   return (
-    <div className="flex h-full flex-col justify-center gap-8">
+    <div className="flex h-full flex-col justify-center gap-8 p-6 md:p-10">
       <div className="text-[12px] font-semibold text-muted-foreground">resume.pdf · experience</div>
       <p className="text-[17px] leading-relaxed text-muted-foreground">
         Designed and <Hl delay={0.3}>built REST services with FastAPI</Hl> for an internal billing platform, and{" "}
@@ -83,7 +83,7 @@ function ScreenMock() {
   const above = candidates.filter((c) => c.s >= th);
   const below = candidates.filter((c) => c.s < th);
   return (
-    <div className="flex h-full flex-col justify-center gap-5">
+    <div className="flex h-full flex-col justify-center gap-5 p-6 md:p-10">
       <div>
         <div className="mb-3 flex justify-between text-[12px] text-muted-foreground">
           <span className="font-semibold">Threshold</span>
@@ -148,58 +148,226 @@ function ScreenMock() {
   );
 }
 
-const langs = ["English", "हिन्दी", "Hinglish"];
-const q = "Interviewer: You mentioned async endpoints. How did you handle timeouts?";
-const a = "Candidate: Har external call pe timeout set kiya, aur retries ko backoff ke saath limit kiya.";
+const languages = [
+  {
+    id: "en",
+    label: "English",
+    segments: [
+      { text: "How did you optimize " },
+      { text: "PostgreSQL", highlight: true },
+      { text: " in your " },
+      { text: "FastAPI", highlight: true },
+      { text: " project?" },
+    ],
+  },
+  {
+    id: "hi",
+    label: "हिन्दी",
+    segments: [
+      { text: "आपने अपने " },
+      { text: "FastAPI", highlight: true },
+      { text: " प्रोजेक्ट में " },
+      { text: "PostgreSQL", highlight: true },
+      { text: " को कैसे ऑप्टिमाइज़ किया?" },
+    ],
+  },
+  {
+    id: "cm",
+    label: "Code-mixed",
+    segments: [
+      { text: "Aapne " },
+      { text: "FastAPI", highlight: true },
+      { text: " project mein " },
+      { text: "Postgres", highlight: true },
+      { text: " ko kaise optimize kiya?" },
+    ],
+  },
+] as const;
+
+function renderTypedSegments(
+  segments: (typeof languages)[number]["segments"],
+  typedCount: number
+) {
+  let remaining = typedCount;
+  return segments.map((seg, idx) => {
+    if (remaining <= 0) return null;
+    const len = seg.text.length;
+    const count = Math.min(len, remaining);
+    const visibleText = seg.text.slice(0, count);
+    remaining -= count;
+
+    if ("highlight" in seg && seg.highlight) {
+      return (
+        <span
+          key={idx}
+          className="mx-1 inline-block rounded-[3px] bg-[#FACC15] px-1.5 py-0.5 text-[15px] sm:text-[17px] font-medium text-[#0a0a0a]"
+        >
+          {visibleText}
+        </span>
+      );
+    }
+    return <span key={idx}>{visibleText}</span>;
+  });
+}
 
 function InterviewMock() {
   const reduce = useReducedMotion();
-  const [li, setLi] = useState(2);
-  const [n, setN] = useState(reduce ? q.length + a.length : 0);
+  const [activeLang, setActiveLang] = useState(0);
+  const [typedLength, setTypedLength] = useState(0);
+
+  const currentLanguage = languages[activeLang] ?? languages[0];
+  const currentSegments = currentLanguage.segments;
+  const totalChars = useMemo(
+    () => currentSegments.reduce((sum, s) => sum + s.text.length, 0),
+    [currentSegments]
+  );
+
   useEffect(() => {
-    if (reduce) return;
-    const c = setInterval(() => setLi((v) => (v + 1) % 3), 3000);
-    const t = setInterval(() => setN((v) => (v >= q.length + a.length + 40 ? 0 : v + 1)), 35);
+    if (reduce) {
+      setTypedLength(totalChars);
+      return;
+    }
+
+    setTypedLength(0);
+    let current = 0;
+    let pauseTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const interval = setInterval(() => {
+      current += 1;
+      setTypedLength(current);
+
+      if (current >= totalChars) {
+        clearInterval(interval);
+        pauseTimeout = setTimeout(() => {
+          setActiveLang((prev) => (prev + 1) % languages.length);
+        }, 3400);
+      }
+    }, 42);
+
     return () => {
-      clearInterval(c);
-      clearInterval(t);
+      clearInterval(interval);
+      if (pauseTimeout) clearTimeout(pauseTimeout);
     };
-  }, [reduce]);
-  const bars = useMemo(() => Array.from({ length: 28 }, (): [number, number, number] => [0.2 + Math.random() * 0.8, 0.2 + Math.random() * 0.8, 0.2 + Math.random() * 0.8]), []);
+  }, [activeLang, totalChars, reduce]);
+
+  const waveformBars = useMemo(
+    () =>
+      Array.from({ length: 34 }, (_, i) => {
+        const dist = Math.abs(i - 16.5) / 16.5;
+        const env = Math.max(0.2, 1 - dist * 0.7);
+        return [
+          Math.max(0.18, env * 0.32),
+          Math.max(0.28, env * 0.96),
+          Math.max(0.22, env * 0.62),
+        ] as [number, number, number];
+      }),
+    []
+  );
+
   return (
-    <div className="flex h-full flex-col justify-center gap-6">
-      <div className="inline-flex w-fit rounded-full bg-field p-1" role="tablist" aria-label="Interview language">
-        {langs.map((l, i) => (
-          <span key={l} role="tab" aria-selected={li === i} className="relative rounded-full px-4 py-1.5 text-[14px] font-semibold">
-            {li === i && (
-              <motion.span layoutId="lang-pill" className="absolute inset-0 rounded-full bg-primary" transition={{ duration: 0.5, ease: EASE }} />
-            )}
-            <span className={`relative ${li === i ? "text-primary-foreground" : "text-muted-foreground"}`}>{l}</span>
+    <div className="flex h-full flex-col justify-between">
+      {/* Top Header */}
+      <div className="flex items-center justify-between border-b border-hairline px-6 py-3 text-[10.5px] font-mono tracking-wider text-muted-foreground">
+        <span>INTERVIEW / ILLUSTRATIVE</span>
+        <span className="flex items-center gap-2">
+          <span>TRANSCRIPT ACTIVE</span>
+          <span className="relative flex h-2 w-2 items-center justify-center">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FACC15] opacity-50" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#FACC15]" />
           </span>
-        ))}
+        </span>
       </div>
-      <div className="min-h-[120px] space-y-3 text-[15px]">
-        <p className="text-muted-foreground">{q.slice(0, Math.min(n, q.length))}</p>
-        <p>{n > q.length ? a.slice(0, n - q.length) : ""}</p>
+
+      {/* Camera Viewfinder & Waveform */}
+      <div className="flex flex-1 flex-col items-center justify-center border-b border-hairline px-6 py-4">
+        {/* Camera frame */}
+        <div className="relative flex h-28 w-48 flex-col items-center justify-center">
+          <span className="absolute left-0 top-0 h-4 w-4 border-l border-t border-muted-foreground/45" />
+          <span className="absolute right-0 top-0 h-4 w-4 border-r border-t border-muted-foreground/45" />
+          <span className="absolute bottom-0 left-0 h-4 w-4 border-b border-l border-muted-foreground/45" />
+          <span className="absolute bottom-0 right-0 h-4 w-4 border-b border-r border-muted-foreground/45" />
+
+          <div className="flex flex-col items-center">
+            <div className="h-10 w-10 rounded-full border border-muted-foreground/50" />
+            <div className="h-5 w-20 rounded-t-full border-t border-muted-foreground/50" />
+          </div>
+
+          <span className="mt-3 font-mono text-[8.5px] tracking-widest text-muted-foreground/60 uppercase">
+            CAMERA PLACEHOLDER / NO RECORDING
+          </span>
+        </div>
+
+        {/* Audio Waveform */}
+        <div className="mt-4 flex h-7 items-center justify-center gap-[3px]" aria-hidden>
+          {waveformBars.map((b, i) =>
+            reduce ? (
+              <span
+                key={i}
+                className="w-[2.5px] rounded-full bg-[#FACC15]"
+                style={{ height: "26px", transform: `scaleY(${b[1]})` }}
+              />
+            ) : (
+              <motion.span
+                key={i}
+                className="w-[2.5px] origin-center rounded-full bg-[#FACC15]"
+                style={{ height: "26px" }}
+                animate={{ scaleY: [b[0], b[1], b[2], b[0]] }}
+                transition={{
+                  duration: 0.85 + (i % 6) * 0.1,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: (i % 5) * 0.07,
+                }}
+              />
+            )
+          )}
+        </div>
       </div>
-      <div className="flex h-12 items-center gap-[3px]" aria-hidden>
-        {bars.map((b, i) =>
-          reduce ? (
-            <span
-              key={i}
-              className="h-full flex-1 origin-center rounded-full bg-foreground/70"
-              style={{ transform: `scaleY(${b[0]})` }}
-            />
-          ) : (
-            <motion.span
-              key={i}
-              className="h-full flex-1 origin-center rounded-full bg-foreground/70"
-              initial={{ scaleY: b[0] }}
-              animate={{ scaleY: [b[0], b[1], b[2], b[0]] }}
-              transition={{ duration: 1.2 + (i % 5) * 0.15, repeat: Infinity, ease: "easeInOut" }}
-            />
-          )
-        )}
+
+      {/* Language Selector Bar */}
+      <div className="flex items-center gap-6 border-b border-hairline px-6 py-2.5">
+        {languages.map((l, i) => {
+          const isSel = activeLang === i;
+          return (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => {
+                setActiveLang(i);
+                setTypedLength(0);
+              }}
+              className={`relative py-1 text-[13px] transition-colors cursor-pointer ${
+                isSel ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span>{l.label}</span>
+              {isSel && (
+                <motion.span
+                  layoutId="active-lang-underline"
+                  className="absolute -bottom-[11px] left-0 right-0 h-[2px] bg-[#FACC15]"
+                  transition={{ duration: 0.35, ease: EASE }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Live Caption & Typewriter */}
+      <div className="flex min-h-[110px] flex-col justify-center px-6 py-4">
+        <div className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground/70 uppercase">
+          LIVE CAPTION / ILLUSTRATIVE
+        </div>
+        <p className="min-h-[48px] text-[17px] sm:text-[19px] font-normal leading-snug tracking-tight text-foreground">
+          {renderTypedSegments(currentSegments, reduce ? 999 : typedLength)}
+          <motion.span
+            animate={{ opacity: [1, 0, 1] }}
+            transition={{ duration: 0.75, repeat: Infinity, ease: "linear" }}
+            className="ml-0.5 inline-block font-light text-[#FACC15] select-none"
+          >
+            |
+          </motion.span>
+        </p>
       </div>
     </div>
   );
@@ -265,7 +433,7 @@ export function HowItWorks() {
                 ))}
               </div>
             </div>
-            <div className="relative h-[520px] overflow-hidden rounded-card border border-hairline bg-surface p-10">
+            <div className="relative h-[520px] overflow-hidden rounded-card border border-hairline bg-surface">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active}
@@ -294,7 +462,7 @@ export function HowItWorks() {
                 {s.title}
               </h3>
               <p className="mt-3 text-muted-foreground">{s.body}</p>
-              <div className="mt-6 rounded-card border border-hairline bg-surface p-6">
+              <div className="mt-6 overflow-hidden rounded-card border border-hairline bg-surface">
                 <M />
               </div>
             </Reveal>
