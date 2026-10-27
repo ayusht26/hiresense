@@ -148,5 +148,12 @@ vite.config.ts.timestamp-*
 # Turbo Repo
 .turbo
 
-# Prototype-1
-/Prototype-1
+# TanStack Start / Nitro build artifacts
+.output
+.vinxi
+.tanstack/**
+.nitro
+.wrangler/
+.dev.vars
+
+# Prototype-1 (promoted to root — no longer needed)
