@@ -4,32 +4,13 @@ import {
   useMotionTemplate,
   useMotionValue,
   useReducedMotion,
-  useScroll,
   useSpring,
-  useTransform,
 } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { EASE, Magnetic, btnOutline, btnPrimary, useReady } from "./motion";
 import { HeroVisual } from "./HeroVisual";
 
 const words = ["Hire", "on", "evidence,", "not", "guesswork."];
-
-function FloatTile({ label, className, speed, dur }: { label: string; className: string; speed: number; dur: number }) {
-  const reduce = useReducedMotion();
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 1000], [0, reduce ? 0 : -speed]);
-  return (
-    <motion.div aria-hidden style={{ y }} className={`absolute hidden min-[900px]:block ${className}`}>
-      <motion.div
-        className="squircle flex h-16 w-16 items-center justify-center border border-hairline bg-surface text-[18px] font-semibold text-muted-foreground"
-        animate={reduce ? undefined : { y: [-10, 10, -10] }}
-        transition={{ duration: dur, repeat: Infinity, ease: "easeInOut" }}
-      >
-        {label}
-      </motion.div>
-    </motion.div>
-  );
-}
 
 export function Hero() {
   const ready = useReady();
@@ -139,10 +120,6 @@ export function Hero() {
           transition={{ ...t(0.75), duration: 1.1 }}
           className="relative mt-20 w-full max-w-[1040px]"
         >
-          <FloatTile label="Py" className="-left-10 top-10" speed={120} dur={6} />
-          <FloatTile label="Re" className="-right-8 -top-8" speed={200} dur={7} />
-          <FloatTile label="SQL" className="-left-6 bottom-6" speed={80} dur={8} />
-          <FloatTile label="Dk" className="-right-10 bottom-16" speed={160} dur={5} />
           <HeroVisual start={ready} />
         </motion.div>
       </div>
