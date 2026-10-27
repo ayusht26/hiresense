@@ -98,9 +98,19 @@ function ScreenMock() {
       <LayoutGroup>
         <ul className="space-y-1.5">
           {above.map((c) => (
-            <motion.li layout key={c.id} transition={{ duration: 0.7, ease: EASE }} className="flex justify-between rounded-tile bg-field px-4 py-2 text-[14px]">
-              <span>{c.id}</span>
-              <span className="tabular text-muted-foreground">{c.s}</span>
+            <motion.li
+              layout
+              key={c.id}
+              transition={{ duration: 0.7, ease: EASE }}
+              className="flex items-center justify-between rounded-tile border border-emerald-500/20 bg-field px-4 py-2 text-[14px]"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
+                <span className="text-foreground">{c.id}</span>
+              </div>
+              <span className="inline-flex items-center rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[12px] font-semibold tabular text-emerald-400">
+                {c.s}
+              </span>
             </motion.li>
           ))}
           <motion.li layout key="line" transition={{ duration: 0.7, ease: EASE }} className="flex items-center gap-3 py-1 text-[12px] text-muted-foreground">
@@ -109,9 +119,19 @@ function ScreenMock() {
             <span className="h-px flex-1 bg-hairline-strong" />
           </motion.li>
           {below.map((c) => (
-            <motion.li layout key={c.id} transition={{ duration: 0.7, ease: EASE }} className="flex justify-between rounded-tile px-4 py-2 text-[14px] text-faint">
-              <span>{c.id}</span>
-              <span className="tabular">{c.s}</span>
+            <motion.li
+              layout
+              key={c.id}
+              transition={{ duration: 0.7, ease: EASE }}
+              className="flex items-center justify-between rounded-tile border border-rose-500/15 bg-rose-500/[0.03] px-4 py-2 text-[14px] text-muted-foreground"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400/80 shadow-[0_0_6px_rgba(251,113,133,0.3)]" />
+                <span>{c.id}</span>
+              </div>
+              <span className="inline-flex items-center rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[12px] font-semibold tabular text-rose-400/80">
+                {c.s}
+              </span>
             </motion.li>
           ))}
         </ul>
@@ -145,7 +165,7 @@ function InterviewMock() {
       clearInterval(t);
     };
   }, [reduce]);
-  const bars = useMemo(() => Array.from({ length: 28 }, () => [0.2 + Math.random() * 0.8, 0.2 + Math.random() * 0.8, 0.2 + Math.random() * 0.8]), []);
+  const bars = useMemo(() => Array.from({ length: 28 }, (): [number, number, number] => [0.2 + Math.random() * 0.8, 0.2 + Math.random() * 0.8, 0.2 + Math.random() * 0.8]), []);
   return (
     <div className="flex h-full flex-col justify-center gap-6">
       <div className="inline-flex w-fit rounded-full bg-field p-1" role="tablist" aria-label="Interview language">
@@ -163,28 +183,36 @@ function InterviewMock() {
         <p>{n > q.length ? a.slice(0, n - q.length) : ""}</p>
       </div>
       <div className="flex h-12 items-center gap-[3px]" aria-hidden>
-        {bars.map((b, i) => (
-          <motion.span
-            key={i}
-            className="h-full flex-1 origin-center rounded-full bg-foreground/70"
-            initial={{ scaleY: b[0] }}
-            animate={reduce ? undefined : { scaleY: [b[0], b[1], b[2], b[0]] }}
-            transition={{ duration: 1.2 + (i % 5) * 0.15, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ))}
+        {bars.map((b, i) =>
+          reduce ? (
+            <span
+              key={i}
+              className="h-full flex-1 origin-center rounded-full bg-foreground/70"
+              style={{ transform: `scaleY(${b[0]})` }}
+            />
+          ) : (
+            <motion.span
+              key={i}
+              className="h-full flex-1 origin-center rounded-full bg-foreground/70"
+              initial={{ scaleY: b[0] }}
+              animate={{ scaleY: [b[0], b[1], b[2], b[0]] }}
+              transition={{ duration: 1.2 + (i % 5) * 0.15, repeat: Infinity, ease: "easeInOut" }}
+            />
+          )
+        )}
       </div>
     </div>
   );
 }
 
-const mocks = [MatchMock, ScreenMock, InterviewMock];
+const mocks = [MatchMock, ScreenMock, InterviewMock] as const;
 
 export function HowItWorks() {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   useMotionValueEvent(scrollYProgress, "change", (v) => setActive(Math.min(2, Math.floor(v * 3))));
-  const Mock = mocks[active];
+  const Mock = mocks[active] ?? MatchMock;
 
   return (
     <section id="how" aria-labelledby="how-h" className="pt-[120px]">
@@ -200,9 +228,21 @@ export function HowItWorks() {
               <div className="relative w-px bg-hairline">
                 <motion.div className="absolute inset-0 origin-top bg-foreground" style={{ scaleY: scrollYProgress }} />
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col justify-center gap-10 lg:gap-12 py-2">
                 {steps.map((s, i) => (
-                  <div key={s.n}>
+                  <div
+                    key={s.n}
+                    className="cursor-pointer select-none transition-opacity"
+                    onClick={() => {
+                      if (!ref.current) return;
+                      const rect = ref.current.getBoundingClientRect();
+                      const scrollTop = window.scrollY || window.pageYOffset;
+                      const top = rect.top + scrollTop;
+                      const totalScroll = ref.current.offsetHeight - window.innerHeight;
+                      const fraction = i === 0 ? 0.08 : i === 1 ? 0.5 : 0.92;
+                      window.scrollTo({ top: top + fraction * totalScroll, behavior: "smooth" });
+                    }}
+                  >
                     <motion.h3 className="text-h2" animate={{ opacity: active === i ? 1 : 0.25 }} transition={{ duration: 0.5, ease: EASE }}>
                       <span className="mr-4 text-h4 align-top text-muted-foreground">{s.n}</span>
                       {s.title}
@@ -215,7 +255,7 @@ export function HowItWorks() {
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.5, ease: EASE }}
-                          className="max-w-[440px] overflow-hidden pt-3 text-[17px] text-muted-foreground"
+                          className="max-w-[440px] overflow-hidden pt-4 text-[17px] leading-relaxed text-muted-foreground"
                         >
                           {s.body}
                         </motion.p>
@@ -246,7 +286,7 @@ export function HowItWorks() {
       {/* Mobile stacked */}
       <div className="container-x mt-12 space-y-16 min-[900px]:hidden">
         {steps.map((s, i) => {
-          const M = mocks[i];
+          const M = mocks[i] ?? MatchMock;
           return (
             <Reveal key={s.n}>
               <h3 className="text-h3">
