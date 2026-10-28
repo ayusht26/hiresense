@@ -9,16 +9,41 @@ export function Footer() {
           <nav aria-label="Product">
             <h3 className="mb-3 text-[14px] font-semibold">Product</h3>
             <ul className="space-y-2 text-inverse-muted">
-              <li><a className="transition-colors hover:text-inverse-foreground" href="/#how">How it works</a></li>
-              <li><a className="transition-colors hover:text-inverse-foreground" href="/#faq">FAQ</a></li>
+              <li>
+                <a className="transition-colors hover:text-inverse-foreground" href="/#how">
+                  How it works
+                </a>
+              </li>
+              <li>
+                <a className="transition-colors hover:text-inverse-foreground" href="/#faq">
+                  FAQ
+                </a>
+              </li>
+              <li>
+                <Link to="/login" className="transition-colors hover:text-inverse-foreground">
+                  Log in
+                </Link>
+              </li>
             </ul>
           </nav>
           <nav aria-label="Company">
             <h3 className="mb-3 text-[14px] font-semibold">Company</h3>
             <ul className="space-y-2 text-inverse-muted">
-              <li><Link to="/about" className="transition-colors hover:text-inverse-foreground">About us</Link></li>
-              <li><Link to="/contact" className="transition-colors hover:text-inverse-foreground">Contact us</Link></li>
-              <li><Link to="/privacy" className="transition-colors hover:text-inverse-foreground">Privacy policy</Link></li>
+              <li>
+                <Link to="/about" className="transition-colors hover:text-inverse-foreground">
+                  About us
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="transition-colors hover:text-inverse-foreground">
+                  Contact us
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="transition-colors hover:text-inverse-foreground">
+                  Privacy policy
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>

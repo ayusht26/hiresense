@@ -60,10 +60,7 @@ export function Nav() {
     last.current = v;
   });
 
-  const handleLinkClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    href: string
-  ) => {
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     const hashIndex = href.indexOf("#");
     if (hashIndex === -1) return;
 
@@ -161,12 +158,21 @@ export function Nav() {
             );
           })}
         </ul>
-        <Link
-          to="/contact"
-          className={`${btnPrimary} h-10 px-5 text-[14px]`}
-        >
-          Request access
-        </Link>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <Link
+            to="/login"
+            className={`rounded-full px-3.5 py-2 text-[14px] font-semibold transition-colors ${
+              pathname === "/login"
+                ? "bg-field text-foreground"
+                : "text-muted-foreground hover:bg-field hover:text-foreground"
+            }`}
+          >
+            Log in
+          </Link>
+          <Link to="/contact" className={`${btnPrimary} h-10 px-4 sm:px-5 text-[14px]`}>
+            Request access
+          </Link>
+        </div>
       </nav>
     </motion.header>
   );
