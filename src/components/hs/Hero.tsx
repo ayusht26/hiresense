@@ -13,6 +13,83 @@ import { EASE, Magnetic, btnOutline, btnPrimary, useReady } from "./motion";
 import { HeroVisual } from "./HeroVisual";
 
 const words = ["Hire", "on", "evidence,", "not", "guesswork."];
+const evidenceLetters = ["e", "v", "i", "d", "e", "n", "c", "e"];
+
+function EvidenceWord({
+  reduce,
+  ready,
+  delay,
+}: {
+  reduce?: boolean;
+  ready: boolean;
+  delay: number;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [entered, setEntered] = useState(false);
+
+  return (
+    <span
+      className={`inline-block pb-[0.08em] align-bottom ${
+        entered ? "overflow-visible" : "overflow-hidden"
+      }`}
+    >
+      <motion.span
+        className="relative inline-block"
+        initial={{ y: reduce ? 0 : "110%", opacity: reduce ? 0 : 1 }}
+        animate={ready ? { y: 0, opacity: 1 } : {}}
+        transition={{ duration: reduce ? 0.4 : 0.9, ease: EASE, delay: reduce ? 0 : delay }}
+        onAnimationComplete={() => setEntered(true)}
+      >
+        <span
+          className="group relative inline-block cursor-pointer select-none"
+          data-hover="true"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        >
+          {/* Stadium pill backplate (scales proportionally with display font size via em units) */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-[0.22em] -inset-y-[0.08em] -z-10 rounded-full border border-hairline-strong bg-surface transition-all duration-300"
+            style={{
+              opacity: hovered ? 1 : 0,
+              transform: hovered ? "scale(1)" : "scale(0.96)",
+            }}
+          />
+
+          {/* Individual letters with spring stagger wave */}
+          <span className="relative inline-flex">
+            {evidenceLetters.map((char, idx) => (
+              <motion.span
+                key={idx}
+                className="inline-block"
+                animate={hovered && !reduce ? { y: -8 } : { y: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 420,
+                  damping: 18,
+                  delay: idx * 0.02,
+                }}
+              >
+                {char}
+              </motion.span>
+            ))}
+          </span>
+
+          {/* Underline */}
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute bottom-[0.04em] left-0 h-[2px] w-full origin-left bg-foreground"
+            initial={{ scaleX: reduce ? 1 : 0 }}
+            animate={ready ? { scaleX: 1 } : {}}
+            transition={{ duration: reduce ? 0.4 : 0.9, ease: EASE, delay: reduce ? 0 : 0.9 }}
+          />
+        </span>
+        <span>,</span>
+      </motion.span>
+      <span>&nbsp;</span>
+    </span>
+  );
+}
 
 export function Hero() {
   const ready = useReady();
@@ -80,28 +157,28 @@ export function Hero() {
 
       <div className="container-x relative flex flex-col items-center text-center">
         <h1 className="text-display max-w-[1100px]">
-          {words.map((w, i) => (
-            <span key={w} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
-              <motion.span
-                className="relative inline-block"
-                initial={{ y: reduce ? 0 : "110%", opacity: reduce ? 0 : 1 }}
-                animate={ready ? { y: 0, opacity: 1 } : {}}
-                transition={t(0.1 + i * 0.06)}
-              >
-                {w}
-                {w === "evidence," && (
-                  <motion.span
-                    aria-hidden
-                    className="absolute bottom-[0.04em] left-0 h-[2px] w-[calc(100%-0.25em)] origin-left bg-foreground"
-                    initial={{ scaleX: reduce ? 1 : 0 }}
-                    animate={ready ? { scaleX: 1 } : {}}
-                    transition={t(0.9)}
-                  />
-                )}
-              </motion.span>
-              {i < words.length - 1 && <span>&nbsp;</span>}
-            </span>
-          ))}
+          {words.map((w, i) =>
+            w === "evidence," ? (
+              <EvidenceWord
+                key={w}
+                reduce={reduce}
+                ready={ready}
+                delay={0.1 + i * 0.06}
+              />
+            ) : (
+              <span key={w} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+                <motion.span
+                  className="relative inline-block"
+                  initial={{ y: reduce ? 0 : "110%", opacity: reduce ? 0 : 1 }}
+                  animate={ready ? { y: 0, opacity: 1 } : {}}
+                  transition={t(0.1 + i * 0.06)}
+                >
+                  {w}
+                </motion.span>
+                {i < words.length - 1 && <span>&nbsp;</span>}
+              </span>
+            )
+          )}
         </h1>
 
         <motion.p
