@@ -104,7 +104,7 @@ export function Cursor() {
       const t = e.target as Element | null;
       const onInput = !!t?.closest?.("input, textarea");
       setHidden(onInput);
-      setHover(!!t?.closest?.("a, button"));
+      setHover(!!t?.closest?.("a, button, [data-hover]"));
     };
     const leave = () => setHidden(true);
     window.addEventListener("pointermove", move);
