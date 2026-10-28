@@ -1,8 +1,9 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UserRoundSearch } from "lucide-react";
 import { EASE, btnPrimary } from "./motion";
+import { scrollToTarget } from "@/lib/scroll";
 
 export function Logomark({ dark = false, className = "" }: { dark?: boolean; className?: string }) {
   return (
@@ -28,14 +29,90 @@ export function Nav() {
   const last = useRef(0);
   const [hidden, setHidden] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const router = useRouter();
+  const isProgrammaticScroll = useRef(false);
+
+  // If user manually touches wheel or touchmove while scrolling, yield control
+  useEffect(() => {
+    const cancelProgrammatic = () => {
+      if (isProgrammaticScroll.current) {
+        isProgrammaticScroll.current = false;
+        last.current = window.scrollY;
+      }
+    };
+    window.addEventListener("wheel", cancelProgrammatic, { passive: true });
+    window.addEventListener("touchmove", cancelProgrammatic, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", cancelProgrammatic);
+      window.removeEventListener("touchmove", cancelProgrammatic);
+    };
+  }, []);
 
   useMotionValueEvent(scrollY, "change", (v) => {
+    if (isProgrammaticScroll.current) {
+      last.current = v;
+      return;
+    }
     const d = v - last.current;
     if (v < 80) setHidden(false);
     else if (d > 4) setHidden(true);
     else if (d < -4) setHidden(false);
     last.current = v;
   });
+
+  const handleLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    const hashIndex = href.indexOf("#");
+    if (hashIndex === -1) return;
+
+    const hash = href.slice(hashIndex); // e.g. '#how'
+    const targetPath = href.slice(0, hashIndex) || "/";
+
+    if (pathname === targetPath) {
+      e.preventDefault();
+      isProgrammaticScroll.current = true;
+      setHidden(false);
+
+      if (window.location.hash !== hash) {
+        window.history.pushState(null, "", hash);
+      }
+
+      scrollToTarget(hash, {
+        duration: 1.2,
+        onComplete: () => {
+          isProgrammaticScroll.current = false;
+          last.current = scrollY.get();
+          setHidden(false);
+        },
+      });
+    } else {
+      e.preventDefault();
+      router.navigate({ to: targetPath, hash: hash.replace("#", "") });
+    }
+  };
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      isProgrammaticScroll.current = true;
+      setHidden(false);
+
+      if (window.location.hash) {
+        window.history.pushState(null, "", "/");
+      }
+
+      scrollToTarget(0, {
+        duration: 1.2,
+        onComplete: () => {
+          isProgrammaticScroll.current = false;
+          last.current = scrollY.get();
+          setHidden(false);
+        },
+      });
+    }
+  };
 
   return (
     <motion.header
@@ -49,6 +126,7 @@ export function Nav() {
       >
         <Link
           to="/"
+          onClick={handleLogoClick}
           className="group flex items-center gap-2.5 rounded-full pr-2 font-semibold transition-opacity hover:opacity-90"
         >
           <Logomark />
@@ -73,6 +151,7 @@ export function Nav() {
                 ) : (
                   <a
                     href={l.href}
+                    onClick={(e) => handleLinkClick(e, l.href)}
                     className="rounded-full px-4 py-2 text-[14px] font-semibold text-muted-foreground transition-colors hover:bg-field hover:text-foreground"
                   >
                     {l.label}
@@ -82,9 +161,12 @@ export function Nav() {
             );
           })}
         </ul>
-        <a href="/#join" className={`${btnPrimary} h-10 px-5 text-[14px]`}>
-          Request early access
-        </a>
+        <Link
+          to="/contact"
+          className={`${btnPrimary} h-10 px-5 text-[14px]`}
+        >
+          Request access
+        </Link>
       </nav>
     </motion.header>
   );

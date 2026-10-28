@@ -218,11 +218,8 @@ function AboutPage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link to="/contact" className={btnPrimary}>
-                  Contact the team
+                  Request access
                 </Link>
-                <a href="/#join" className={btnOutline}>
-                  Request early access
-                </a>
               </div>
             </div>
           </div>

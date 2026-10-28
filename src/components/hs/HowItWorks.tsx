@@ -12,6 +12,7 @@ import {
 } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EASE, Reveal } from "./motion";
+import { scrollToTarget } from "@/lib/scroll";
 
 const steps = [
   {
@@ -896,7 +897,7 @@ export function HowItWorks() {
                       const top = rect.top + scrollTop;
                       const totalScroll = ref.current.offsetHeight - window.innerHeight;
                       const fraction = i === 0 ? 0.08 : i === 1 ? 0.5 : 0.92;
-                      window.scrollTo({ top: top + fraction * totalScroll, behavior: "smooth" });
+                      scrollToTarget(top + fraction * totalScroll, { duration: 1.0 });
                     }}
                   >
                     <motion.h3 className="text-h2" animate={{ opacity: active === i ? 1 : 0.25 }} transition={{ duration: 0.5, ease: EASE }}>

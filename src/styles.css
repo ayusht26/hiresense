@@ -74,7 +74,15 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { background: var(--background); }
+  html {
+    background: var(--background);
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
   html.lenis, html.lenis body { height: auto; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
   body {

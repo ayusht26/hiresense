@@ -19,7 +19,7 @@ const faqs = [
 export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section id="faq" aria-labelledby="faq-h" className="container-x pt-[120px]">
+    <section id="faq" aria-labelledby="faq-h" className="container-x pt-20 md:pt-28 pb-20 md:pb-28 lg:pb-32">
       <Reveal>
         <h2 id="faq-h" className="text-h2">Questions, answered.</h2>
       </Reveal>

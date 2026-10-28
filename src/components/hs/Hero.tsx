@@ -7,6 +7,7 @@ import {
   useReducedMotion,
   useSpring,
 } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { EASE, Magnetic, btnOutline, btnPrimary, useReady } from "./motion";
 import { HeroVisual } from "./HeroVisual";
@@ -120,7 +121,7 @@ export function Hero() {
           className="mt-10 flex flex-wrap items-center justify-center gap-3"
         >
           <Magnetic>
-            <a href="#join" className={btnPrimary}>Request early access</a>
+            <Link to="/contact" className={btnPrimary}>Request access</Link>
           </Magnetic>
           <a href="#how" className={btnOutline}>See how it works</a>
         </motion.div>

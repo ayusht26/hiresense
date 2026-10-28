@@ -1,6 +1,7 @@
 import { AnimatePresence, frame, cancelFrame, motion, useMotionValue, useReducedMotion, useScroll, useSpring } from "framer-motion";
 import { useEffect, useState } from "react";
 import { EASE } from "./motion";
+import { scrollToTarget } from "@/lib/scroll";
 
 export function SmoothScroll() {
   const reduce = useReducedMotion();
@@ -17,10 +18,54 @@ export function SmoothScroll() {
       frame.update(update, true);
       (window as unknown as { __lenis?: unknown }).__lenis = l;
     });
+
+    const handleAnchorClick = (e: MouseEvent) => {
+      if (
+        e.defaultPrevented ||
+        e.button !== 0 ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey
+      ) {
+        return;
+      }
+      const anchor = (e.target as Element | null)?.closest("a");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (!href) return;
+
+      const hashIndex = href.indexOf("#");
+      if (hashIndex === -1) return;
+
+      const hash = href.slice(hashIndex);
+      const path = href.slice(0, hashIndex);
+
+      const isCurrentPage =
+        path === "" ||
+        (path === "/" && window.location.pathname === "/") ||
+        path === window.location.pathname;
+
+      if (isCurrentPage && hash.length > 1) {
+        const targetEl = document.querySelector(hash);
+        if (targetEl) {
+          e.preventDefault();
+          if (window.location.hash !== hash) {
+            window.history.pushState(null, "", hash);
+          }
+          scrollToTarget(hash);
+        }
+      }
+    };
+
+    document.addEventListener("click", handleAnchorClick);
+
     return () => {
       cancelled = true;
       if (update) cancelFrame(update);
       lenis?.destroy();
+      (window as unknown as { __lenis?: unknown }).__lenis = undefined;
+      document.removeEventListener("click", handleAnchorClick);
     };
   }, [reduce]);
   return null;

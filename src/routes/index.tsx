@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
 import { Cursor, Grain, Preloader, ScrollProgress, SmoothScroll } from "@/components/hs/Experience";
 import { ReadyContext } from "@/components/hs/motion";
 import { Nav } from "@/components/hs/Nav";
@@ -7,7 +7,8 @@ import { Hero } from "@/components/hs/Hero";
 import { Statement } from "@/components/hs/Statement";
 import { HowItWorks } from "@/components/hs/HowItWorks";
 import { Faq } from "@/components/hs/Faq";
-import { FinalCta, Footer } from "@/components/hs/Closing";
+import { Footer } from "@/components/hs/Closing";
+import { scrollToTarget } from "@/lib/scroll";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,6 +31,20 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [ready, setReady] = useState(false);
   const onDone = useCallback(() => setReady(true), []);
+  const hash = useRouterState({ select: (s) => s.location.hash });
+
+  useEffect(() => {
+    if (!ready) return;
+    const targetHash = hash || (typeof window !== "undefined" ? window.location.hash : "");
+    if (targetHash && targetHash.length > 1) {
+      const formatted = targetHash.startsWith("#") ? targetHash : `#${targetHash}`;
+      const t = setTimeout(() => {
+        scrollToTarget(formatted, { duration: 1.2 });
+      }, 80);
+      return () => clearTimeout(t);
+    }
+  }, [ready, hash]);
+
   return (
     <ReadyContext.Provider value={ready}>
       <SmoothScroll />
@@ -43,7 +58,6 @@ function Index() {
         <Statement />
         <HowItWorks />
         <Faq />
-        <FinalCta />
       </main>
       <Footer />
     </ReadyContext.Provider>

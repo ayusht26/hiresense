@@ -7,9 +7,5 @@ timestamps
 1:43:20
 
 some more changes
-- change the favicon
-- change the logo for the product
-- clicking top links in the navbar should work smoothly
-- make the about us, contact us, and privacy policy page (they should be in the footer links) 
-- implement a login page
+    - implement a login page
 - setup a supabase database
