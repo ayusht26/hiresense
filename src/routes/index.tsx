@@ -12,7 +12,7 @@ import { FinalCta, Footer } from "@/components/hs/Closing";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "HireSense — Hire on evidence, not guesswork." },
+      { title: "HireSense" },
       {
         name: "description",
         content:

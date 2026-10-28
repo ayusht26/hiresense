@@ -1,16 +1,18 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { useRef, useState } from "react";
+import { UserRoundSearch } from "lucide-react";
 import { EASE, btnPrimary } from "./motion";
 
-export function Logomark({ dark = false }: { dark?: boolean }) {
+export function Logomark({ dark = false, className = "" }: { dark?: boolean; className?: string }) {
   return (
     <span
-      className={`squircle inline-flex h-8 w-8 items-center justify-center text-[15px] font-bold ${
+      className={`squircle inline-flex h-8 w-8 shrink-0 items-center justify-center transition-transform duration-200 group-hover:scale-105 ${
         dark ? "bg-inverse-foreground text-inverse" : "bg-inverse text-inverse-foreground"
-      }`}
+      } ${className}`}
+      aria-hidden="true"
     >
-      H
+      <UserRoundSearch size={17} strokeWidth={2.2} className="shrink-0" />
     </span>
   );
 }
@@ -45,7 +47,10 @@ export function Nav() {
         aria-label="Primary"
         className="flex w-full max-w-[880px] items-center justify-between gap-4 rounded-full border border-hairline bg-surface py-2 pl-3 pr-2 shadow-2xl shadow-black/40"
       >
-        <Link to="/" className="flex items-center gap-2.5 rounded-full pr-2 font-semibold">
+        <Link
+          to="/"
+          className="group flex items-center gap-2.5 rounded-full pr-2 font-semibold transition-opacity hover:opacity-90"
+        >
           <Logomark />
           <span className="hidden sm:inline">HireSense</span>
         </Link>
