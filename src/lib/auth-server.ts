@@ -51,19 +51,29 @@ export const serverLoginFn = createServerFn({ method: "POST" })
 
         if (profile?.email) {
           emailToUse = profile.email;
-        } else {
-          return { success: false, error: "Invalid credentials." };
         }
-      } else {
-        // Fallback for demo/test accounts when service role key is not yet set
-        if (identifier.toLowerCase() === "hiresense_recruiter") {
-          emailToUse = "hiresense_recruiter@recruiters.hiresense.online";
-        } else if (identifier.toLowerCase() === "hiresense_student") {
-          emailToUse = "hiresense_student@students.hiresense.online";
-        } else if (identifier.toLowerCase() === "student_634581") {
-          emailToUse = "hiresense.student.634581@gmail.com";
+      }
+
+      // If service role didn't resolve (e.g. key missing), try RPC via anon client
+      if (emailToUse === identifier) {
+        const rpcClient = createClient<Database>(supabaseUrl, anonKey);
+        const { data: resolvedEmail } = await rpcClient.rpc("get_email_by_username_internal", {
+          p_username: identifier,
+        });
+
+        if (resolvedEmail) {
+          emailToUse = resolvedEmail;
         } else {
-          return { success: false, error: "Invalid credentials." };
+          // Fallback for demo/test accounts when offline or database not seeded
+          if (identifier.toLowerCase() === "hiresense_recruiter") {
+            emailToUse = "hiresense_recruiter@recruiters.hiresense.online";
+          } else if (identifier.toLowerCase() === "hiresense_student") {
+            emailToUse = "hiresense_student@students.hiresense.online";
+          } else if (identifier.toLowerCase() === "student_634581") {
+            emailToUse = "hiresense.student.634581@gmail.com";
+          } else {
+            return { success: false, error: "Invalid credentials." };
+          }
         }
       }
     }

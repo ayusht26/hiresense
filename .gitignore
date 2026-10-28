@@ -156,4 +156,6 @@ vite.config.ts.timestamp-*
 .wrangler/
 .dev.vars
 
-# Prototype-1 (promoted to root — no longer needed)
+# Prototype-1 (promoted to root — no longer needed)
+
+env_files.txt

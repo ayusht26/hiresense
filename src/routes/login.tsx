@@ -3,7 +3,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { AuthLayout } from "@/components/hs/AuthLayout";
 import { SmoothInput, FormField } from "@/components/ui/smooth-input";
-import { supabase, fetchUserProfile } from "@/lib/supabase";
+import { supabase, fetchUserProfile, resolveUsernameToEmail } from "@/lib/supabase";
 import { serverLoginFn } from "@/lib/auth-server";
 
 export const Route = createFileRoute("/login")({
@@ -64,54 +64,62 @@ function LoginPage() {
     setError(null);
 
     try {
-      let authUser: { id: string; app_metadata?: { role?: string } } | null = null;
+      let emailToUse = trimmedId;
 
-      if (trimmedId.includes("@")) {
-        const { data, error: authError } = await supabase.auth.signInWithPassword({
-          email: trimmedId,
-          password,
-        });
+      if (!trimmedId.includes("@")) {
+        const resolvedEmail = await resolveUsernameToEmail(trimmedId);
+        if (resolvedEmail) {
+          emailToUse = resolvedEmail;
+        } else {
+          // If direct RPC couldn't resolve, try serverLoginFn as fallback
+          try {
+            const res = await serverLoginFn({
+              data: {
+                identifier: trimmedId,
+                password,
+              },
+            });
 
-        if (authError || !data.user) {
+            if (res.success && res.session) {
+              const { data: sessionData, error: setSessionErr } = await supabase.auth.setSession(
+                res.session as { access_token: string; refresh_token: string },
+              );
+
+              if (!setSessionErr && sessionData.user) {
+                const profile = await fetchUserProfile(sessionData.user.id);
+                const role = sessionData.user.app_metadata?.role || profile?.role || "student";
+                const avatarDone = profile?.avatar_step_done ?? false;
+
+                if (role === "student" && !avatarDone) {
+                  navigate({ to: "/signup/photo" });
+                } else {
+                  navigate({ to: "/dashboard" });
+                }
+                return;
+              }
+            }
+          } catch {
+            // Ignore serverLoginFn error and show invalid credentials below
+          }
+
           setError("Invalid credentials.");
           setLoading(false);
           return;
         }
-        authUser = data.user;
-      } else {
-        // Resolve username server-side
-        const res = await serverLoginFn({
-          data: {
-            identifier: trimmedId,
-            password,
-          },
-        });
-
-        if (!res.success || !res.session) {
-          setError("Invalid credentials.");
-          setLoading(false);
-          return;
-        }
-
-        // Set session on the browser client
-        const { data: sessionData, error: setSessionErr } = await supabase.auth.setSession(
-          res.session as { access_token: string; refresh_token: string },
-        );
-
-        if (setSessionErr || !sessionData.user) {
-          setError("Invalid credentials.");
-          setLoading(false);
-          return;
-        }
-
-        authUser = sessionData.user;
       }
 
-      if (!authUser) {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: emailToUse,
+        password,
+      });
+
+      if (authError || !data.user) {
         setError("Invalid credentials.");
         setLoading(false);
         return;
       }
+
+      const authUser = data.user;
 
       // Fetch profile to check role and avatar_step_done
       const profile = await fetchUserProfile(authUser.id);
