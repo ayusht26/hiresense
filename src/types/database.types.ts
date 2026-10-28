@@ -64,59 +64,68 @@ export type Database = {
         Row: {
           company_name: string;
           created_at: string;
-          experience: string;
+          experience: string | null;
           generated_posting: Json | null;
           id: string;
-          job_type: string;
-          location: string;
+          job_type: string | null;
+          location: string | null;
+          model_name: string | null;
+          prompt_version: string | null;
           raw_input: string | null;
           recruiter_id: string;
           salary_currency: string;
+          salary_display: string | null;
           salary_max: number | null;
           salary_min: number | null;
           salary_period: string;
           status: string;
           title: string;
           updated_at: string;
-          work_mode: string;
+          work_mode: string | null;
         };
         Insert: {
           company_name: string;
           created_at?: string;
-          experience: string;
+          experience?: string | null;
           generated_posting?: Json | null;
           id?: string;
-          job_type: string;
-          location: string;
+          job_type?: string | null;
+          location?: string | null;
+          model_name?: string | null;
+          prompt_version?: string | null;
           raw_input?: string | null;
           recruiter_id: string;
           salary_currency?: string;
+          salary_display?: string | null;
           salary_max?: number | null;
           salary_min?: number | null;
           salary_period?: string;
           status?: string;
           title: string;
           updated_at?: string;
-          work_mode: string;
+          work_mode?: string | null;
         };
         Update: {
           company_name?: string;
           created_at?: string;
-          experience?: string;
+          experience?: string | null;
           generated_posting?: Json | null;
           id?: string;
-          job_type?: string;
-          location?: string;
+          job_type?: string | null;
+          location?: string | null;
+          model_name?: string | null;
+          prompt_version?: string | null;
           raw_input?: string | null;
           recruiter_id?: string;
           salary_currency?: string;
+          salary_display?: string | null;
           salary_max?: number | null;
           salary_min?: number | null;
           salary_period?: string;
           status?: string;
           title?: string;
           updated_at?: string;
-          work_mode?: string;
+          work_mode?: string | null;
         };
         Relationships: [
           {
@@ -189,3 +198,44 @@ export type Database = {
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type UserRole = Database["public"]["Enums"]["user_role"];
+export type Job = Database["public"]["Tables"]["jobs"]["Row"];
+export type JobInsert = Database["public"]["Tables"]["jobs"]["Insert"];
+export type JobUpdate = Database["public"]["Tables"]["jobs"]["Update"];
+
+export type RequirementType = "mandatory" | "preferred" | "contextual" | "informational";
+
+export type TechStackItem = {
+  name: string;
+  canonical_name: string;
+  category: string;
+  devicon_slug: string | null;
+  requirement_type: RequirementType;
+};
+
+export type SalaryStructure = {
+  min: number | null;
+  max: number | null;
+  currency: string;
+  period: string;
+  display: string;
+};
+
+export type Qualifications = {
+  mandatory: string[];
+  preferred: string[];
+};
+
+export type StructuredJobListing = {
+  title: string;
+  company: string;
+  location: string | null;
+  work_mode: "remote" | "hybrid" | "onsite" | null;
+  employment_type: string | null;
+  experience: string | null;
+  salary: SalaryStructure;
+  about_role: string;
+  responsibilities: string[];
+  qualifications: Qualifications;
+  tech_stack: TechStackItem[];
+  benefits: string[];
+};
