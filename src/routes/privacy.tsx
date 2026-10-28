@@ -106,14 +106,13 @@ function PrivacyPage() {
           </Reveal>
 
           <Reveal delay={0.08}>
-            <h1 className="text-display mt-6 font-semibold">
-              Privacy and proctoring policy.
-            </h1>
+            <h1 className="text-display mt-6 font-semibold">Privacy and proctoring policy.</h1>
           </Reveal>
 
           <Reveal delay={0.16}>
             <p className="text-lead mt-6 text-muted-foreground">
-              Last revised: October 2026 · Built on evidence, verifiable by humans, and committed to candidate dignity.
+              Last revised: October 2026 · Built on evidence, verifiable by humans, and committed to
+              candidate dignity.
             </p>
           </Reveal>
         </div>
@@ -123,9 +122,12 @@ function PrivacyPage() {
           <Reveal delay={0.2}>
             <div className="h-full rounded-card border border-hairline bg-surface p-6">
               <span className="text-[12px] font-semibold text-muted-foreground">Guarantee 01</span>
-              <h2 className="text-[18px] mt-2 font-semibold text-foreground">No Emotion or Lie Detection</h2>
+              <h2 className="text-[18px] mt-2 font-semibold text-foreground">
+                No Emotion or Lie Detection
+              </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                We never infer honesty, anxiety, or character from camera feeds. Proctoring records physical technical events only.
+                We never infer honesty, anxiety, or character from camera feeds. Proctoring records
+                physical technical events only.
               </p>
             </div>
           </Reveal>
@@ -133,9 +135,12 @@ function PrivacyPage() {
           <Reveal delay={0.25}>
             <div className="h-full rounded-card border border-hairline bg-surface p-6">
               <span className="text-[12px] font-semibold text-muted-foreground">Guarantee 02</span>
-              <h2 className="text-[18px] mt-2 font-semibold text-foreground">Protected Characteristic Shield</h2>
+              <h2 className="text-[18px] mt-2 font-semibold text-foreground">
+                Protected Characteristic Shield
+              </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                PII such as gender, age, and background are stripped before scoring calculations to protect against bias.
+                PII such as gender, age, and background are stripped before scoring calculations to
+                protect against bias.
               </p>
             </div>
           </Reveal>
@@ -143,9 +148,12 @@ function PrivacyPage() {
           <Reveal delay={0.3}>
             <div className="h-full rounded-card border border-hairline bg-surface p-6">
               <span className="text-[12px] font-semibold text-muted-foreground">Guarantee 03</span>
-              <h2 className="text-[18px] mt-2 font-semibold text-foreground">Human Accountability</h2>
+              <h2 className="text-[18px] mt-2 font-semibold text-foreground">
+                Human Accountability
+              </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                No candidate is automatically rejected without human recruiter review. Every score links to auditable proof.
+                No candidate is automatically rejected without human recruiter review. Every score
+                links to auditable proof.
               </p>
             </div>
           </Reveal>

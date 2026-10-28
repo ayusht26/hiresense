@@ -20,7 +20,7 @@ describe("scrollToTarget", () => {
       expect.objectContaining({
         duration: 1.2,
         offset: 0,
-      })
+      }),
     );
   });
 
@@ -37,7 +37,7 @@ describe("scrollToTarget", () => {
       "#faq",
       expect.objectContaining({
         offset: 0,
-      })
+      }),
     );
   });
 
@@ -63,4 +63,3 @@ describe("scrollToTarget", () => {
     expect(windowScrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
   });
 });
-

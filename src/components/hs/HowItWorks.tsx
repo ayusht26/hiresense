@@ -66,15 +66,9 @@ function MatchMock({ start = true }: { start?: boolean }) {
       timers.push(setTimeout(() => setPhase(1), 500));
 
       // Key phrase highlights as beam moves down (delayed by 0.5s)
-      timers.push(
-        setTimeout(() => setLineActive((prev) => ({ ...prev, 1: true })), 1700)
-      );
-      timers.push(
-        setTimeout(() => setLineActive((prev) => ({ ...prev, 2: true })), 2400)
-      );
-      timers.push(
-        setTimeout(() => setLineActive((prev) => ({ ...prev, 3: true })), 3100)
-      );
+      timers.push(setTimeout(() => setLineActive((prev) => ({ ...prev, 1: true })), 1700));
+      timers.push(setTimeout(() => setLineActive((prev) => ({ ...prev, 2: true })), 2400));
+      timers.push(setTimeout(() => setLineActive((prev) => ({ ...prev, 3: true })), 3100));
 
       // 2: Scoring phase
       timers.push(setTimeout(() => setPhase(2), 3800));
@@ -114,7 +108,13 @@ function MatchMock({ start = true }: { start?: boolean }) {
       {/* Top Document Bar */}
       <div className="flex items-center justify-between border-b border-hairline pb-4 text-[11px] font-mono text-muted-foreground">
         <div className="flex items-center gap-2.5">
-          <svg className="h-3.5 w-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            className="h-3.5 w-3.5 text-muted-foreground"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
             <polyline points="14 2 14 8 20 8" />
           </svg>
@@ -129,7 +129,11 @@ function MatchMock({ start = true }: { start?: boolean }) {
             />
             <span
               className={`relative inline-flex h-2 w-2 rounded-full ${
-                phase === 1 ? "bg-foreground" : isScored ? "bg-foreground" : "bg-muted-foreground/40"
+                phase === 1
+                  ? "bg-foreground"
+                  : isScored
+                    ? "bg-foreground"
+                    : "bg-muted-foreground/40"
               }`}
             />
           </span>
@@ -148,15 +152,9 @@ function MatchMock({ start = true }: { start?: boolean }) {
             className="pointer-events-none absolute -inset-x-8 top-0 h-16 origin-top z-10"
             initial={{ y: "0%", opacity: 0 }}
             animate={
-              phase === 1
-                ? { y: ["0%", "260%"], opacity: [0, 1, 1, 0] }
-                : { y: "0%", opacity: 0 }
+              phase === 1 ? { y: ["0%", "260%"], opacity: [0, 1, 1, 0] } : { y: "0%", opacity: 0 }
             }
-            transition={
-              phase === 1
-                ? { duration: 3.1, ease: "linear" }
-                : { duration: 0 }
-            }
+            transition={phase === 1 ? { duration: 3.1, ease: "linear" } : { duration: 0 }}
           >
             <div className="h-full w-full bg-gradient-to-t from-foreground/15 to-transparent" />
             <div className="relative h-px w-full bg-foreground shadow-[0_0_8px_rgba(255,255,255,0.4)]">
@@ -169,7 +167,9 @@ function MatchMock({ start = true }: { start?: boolean }) {
         {/* Candidate Resume Header */}
         <div>
           <h4 className="text-[18px] font-[650] text-foreground tracking-tight">Rohan Sharma</h4>
-          <p className="mt-0.5 text-[12.5px] text-muted-foreground">Senior Backend Engineer · 6 years experience</p>
+          <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+            Senior Backend Engineer · 6 years experience
+          </p>
         </div>
 
         <div className="my-4 h-px w-full bg-hairline" />
@@ -247,8 +247,8 @@ function MatchMock({ start = true }: { start?: boolean }) {
                   className="inline-block rounded-[4px] px-2 py-0.5 font-medium border"
                 >
                   PostgreSQL
-                </motion.span>
-                {" "}with automated read replicas.
+                </motion.span>{" "}
+                with automated read replicas.
               </p>
             </div>
             <motion.span
@@ -291,8 +291,8 @@ function MatchMock({ start = true }: { start?: boolean }) {
                   className="inline-block rounded-[4px] px-2 py-0.5 font-medium border"
                 >
                   Docker on AWS
-                </motion.span>
-                {" "}ECS clusters.
+                </motion.span>{" "}
+                ECS clusters.
               </p>
             </div>
             <motion.span
@@ -355,7 +355,7 @@ function ScreenMock({ start = true }: { start?: boolean }) {
   const [th, setTh] = useState(reduce ? 70 : 40);
   const [isScanning, setIsScanning] = useState(false);
   const [revealed, setRevealed] = useState<boolean[]>(
-    reduce ? [true, true, true, true, true, true] : [false, false, false, false, false, false]
+    reduce ? [true, true, true, true, true, true] : [false, false, false, false, false, false],
   );
   const [showDivider, setShowDivider] = useState(reduce);
 
@@ -389,7 +389,7 @@ function ScreenMock({ start = true }: { start?: boolean }) {
         setTimeout(() => {
           setTh(70);
           setIsScanning(true);
-        }, 700)
+        }, 700),
       );
 
       // 2: Sequential reveal as laser scan sweeps top to bottom
@@ -400,7 +400,7 @@ function ScreenMock({ start = true }: { start?: boolean }) {
             next[0] = true;
             return next;
           });
-        }, 950)
+        }, 950),
       );
 
       timers.push(
@@ -410,7 +410,7 @@ function ScreenMock({ start = true }: { start?: boolean }) {
             next[1] = true;
             return next;
           });
-        }, 1200)
+        }, 1200),
       );
 
       timers.push(
@@ -420,14 +420,14 @@ function ScreenMock({ start = true }: { start?: boolean }) {
             next[2] = true;
             return next;
           });
-        }, 1450)
+        }, 1450),
       );
 
       // Below threshold divider expands
       timers.push(
         setTimeout(() => {
           setShowDivider(true);
-        }, 1650)
+        }, 1650),
       );
 
       timers.push(
@@ -437,7 +437,7 @@ function ScreenMock({ start = true }: { start?: boolean }) {
             next[3] = true;
             return next;
           });
-        }, 1850)
+        }, 1850),
       );
 
       timers.push(
@@ -447,7 +447,7 @@ function ScreenMock({ start = true }: { start?: boolean }) {
             next[4] = true;
             return next;
           });
-        }, 2100)
+        }, 2100),
       );
 
       timers.push(
@@ -457,14 +457,14 @@ function ScreenMock({ start = true }: { start?: boolean }) {
             next[5] = true;
             return next;
           });
-        }, 2350)
+        }, 2350),
       );
 
       // End scan beam
       timers.push(
         setTimeout(() => {
           setIsScanning(false);
-        }, 2650)
+        }, 2650),
       );
 
       // Hold complete state, then loop at 8000ms
@@ -505,15 +505,9 @@ function ScreenMock({ start = true }: { start?: boolean }) {
             className="pointer-events-none absolute -inset-x-2 top-0 z-10 h-10 origin-top"
             initial={{ y: "0%", opacity: 0 }}
             animate={
-              isScanning
-                ? { y: ["0%", "520%"], opacity: [0, 1, 1, 0] }
-                : { y: "0%", opacity: 0 }
+              isScanning ? { y: ["0%", "520%"], opacity: [0, 1, 1, 0] } : { y: "0%", opacity: 0 }
             }
-            transition={
-              isScanning
-                ? { duration: 1.85, ease: "easeInOut" }
-                : { duration: 0 }
-            }
+            transition={isScanning ? { duration: 1.85, ease: "easeInOut" } : { duration: 0 }}
           >
             <div className="h-full w-full bg-gradient-to-t from-foreground/12 to-transparent" />
             <div className="relative h-px w-full bg-foreground shadow-[0_0_8px_rgba(255,255,255,0.4)]">
@@ -552,8 +546,8 @@ function ScreenMock({ start = true }: { start?: boolean }) {
                     !isRevealed
                       ? "border-hairline bg-field/50 text-foreground/90 font-normal"
                       : isAbove
-                      ? "border-emerald-500/25 bg-emerald-500/[0.04] text-foreground font-medium"
-                      : "border-rose-500/15 bg-rose-500/[0.03] text-muted-foreground font-normal"
+                        ? "border-emerald-500/25 bg-emerald-500/[0.04] text-foreground font-medium"
+                        : "border-rose-500/15 bg-rose-500/[0.03] text-muted-foreground font-normal"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -562,8 +556,8 @@ function ScreenMock({ start = true }: { start?: boolean }) {
                         !isRevealed
                           ? "bg-muted-foreground/35"
                           : isAbove
-                          ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
-                          : "bg-rose-400/80 shadow-[0_0_6px_rgba(251,113,133,0.3)]"
+                            ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
+                            : "bg-rose-400/80 shadow-[0_0_6px_rgba(251,113,133,0.3)]"
                       }`}
                     />
                     <span className={isRevealed && isAbove ? "text-foreground font-medium" : ""}>
@@ -575,8 +569,8 @@ function ScreenMock({ start = true }: { start?: boolean }) {
                       !isRevealed
                         ? "border-hairline bg-field font-medium text-muted-foreground"
                         : isAbove
-                        ? "border-emerald-500/25 bg-emerald-500/10 font-semibold text-emerald-400"
-                        : "border-rose-500/20 bg-rose-500/10 font-semibold text-rose-400/80"
+                          ? "border-emerald-500/25 bg-emerald-500/10 font-semibold text-emerald-400"
+                          : "border-rose-500/20 bg-rose-500/10 font-semibold text-rose-400/80"
                     }`}
                   >
                     {c.s}
@@ -637,10 +631,7 @@ const languages = [
   },
 ] as const;
 
-function renderTypedSegments(
-  segments: (typeof languages)[number]["segments"],
-  typedCount: number
-) {
+function renderTypedSegments(segments: (typeof languages)[number]["segments"], typedCount: number) {
   let remaining = typedCount;
   return segments.map((seg, idx) => {
     if (remaining <= 0) return null;
@@ -672,7 +663,7 @@ function InterviewMock({ start = true }: { start?: boolean }) {
   const currentSegments = currentLanguage.segments;
   const totalChars = useMemo(
     () => currentSegments.reduce((sum, s) => sum + s.text.length, 0),
-    [currentSegments]
+    [currentSegments],
   );
 
   useEffect(() => {
@@ -720,7 +711,7 @@ function InterviewMock({ start = true }: { start?: boolean }) {
           Math.max(0.22, env * 0.62),
         ] as [number, number, number];
       }),
-    []
+    [],
   );
 
   return (
@@ -784,7 +775,7 @@ function InterviewMock({ start = true }: { start?: boolean }) {
                   delay: (i % 5) * 0.07,
                 }}
               />
-            )
+            ),
           )}
         </div>
       </div>
@@ -802,7 +793,9 @@ function InterviewMock({ start = true }: { start?: boolean }) {
                 setTypedLength(0);
               }}
               className={`relative py-1 text-[13px] transition-colors cursor-pointer ${
-                isSel ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
+                isSel
+                  ? "text-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <span>{l.label}</span>
@@ -852,7 +845,10 @@ function MobileStepCard({ step, index }: { step: (typeof steps)[number]; index: 
         {step.title}
       </h3>
       <p className="mt-3 text-muted-foreground">{step.body}</p>
-      <div ref={cardRef} className="mt-6 overflow-hidden rounded-card border border-hairline bg-surface">
+      <div
+        ref={cardRef}
+        className="mt-6 overflow-hidden rounded-card border border-hairline bg-surface"
+      >
         <M start={isInView} />
       </div>
     </Reveal>
@@ -874,7 +870,9 @@ export function HowItWorks() {
   return (
     <section ref={sectionRef} id="how" aria-labelledby="how-h" className="pt-[120px]">
       <Reveal className="container-x">
-        <h2 id="how-h" className="text-h2 max-w-[700px]">Three stages. One audit trail.</h2>
+        <h2 id="how-h" className="text-h2 max-w-[700px]">
+          Three stages. One audit trail.
+        </h2>
       </Reveal>
 
       {/* Desktop pinned */}
@@ -883,7 +881,10 @@ export function HowItWorks() {
           <div className="container-x grid grid-cols-[1fr_1.1fr] gap-16">
             <div className="flex gap-8">
               <div className="relative w-px bg-hairline">
-                <motion.div className="absolute inset-0 origin-top bg-foreground" style={{ scaleY: scrollYProgress }} />
+                <motion.div
+                  className="absolute inset-0 origin-top bg-foreground"
+                  style={{ scaleY: scrollYProgress }}
+                />
               </div>
               <div className="flex flex-col justify-center gap-10 lg:gap-12 py-2">
                 {steps.map((s, i) => (
@@ -900,7 +901,11 @@ export function HowItWorks() {
                       scrollToTarget(top + fraction * totalScroll, { duration: 1.0 });
                     }}
                   >
-                    <motion.h3 className="text-h2" animate={{ opacity: active === i ? 1 : 0.25 }} transition={{ duration: 0.5, ease: EASE }}>
+                    <motion.h3
+                      className="text-h2"
+                      animate={{ opacity: active === i ? 1 : 0.25 }}
+                      transition={{ duration: 0.5, ease: EASE }}
+                    >
                       <span className="mr-4 text-h4 align-top text-muted-foreground">{s.n}</span>
                       {s.title}
                     </motion.h3>
@@ -949,4 +954,3 @@ export function HowItWorks() {
     </section>
   );
 }
-

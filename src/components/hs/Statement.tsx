@@ -7,17 +7,7 @@ const line2RestWords = ["makes", "sure", "it’s", "an", "informed", "one."];
 
 const totalWords = line1Words.length + 1 + line2RestWords.length;
 
-function Word({
-  w,
-  i,
-  n,
-  p,
-}: {
-  w: string;
-  i: number;
-  n: number;
-  p: MotionValue<number>;
-}) {
+function Word({ w, i, n, p }: { w: string; i: number; n: number; p: MotionValue<number> }) {
   const start = i / n;
   const opacity = useTransform(p, [start, start + 1 / n], [0.2, 1]);
   return (
@@ -100,7 +90,11 @@ export function Statement() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.6", "end end"] });
 
   return (
-    <section ref={ref} aria-label="Statement" className={reduce ? "py-[120px]" : "relative h-[150vh]"}>
+    <section
+      ref={ref}
+      aria-label="Statement"
+      className={reduce ? "py-[120px]" : "relative h-[150vh]"}
+    >
       <div className={reduce ? "" : "sticky top-0 flex h-screen items-center"}>
         <div className="container-x text-h2 max-w-[1100px]">
           {reduce ? (
@@ -117,13 +111,7 @@ export function Statement() {
             <>
               <p className="block">
                 {line1Words.map((w, idx) => (
-                  <Word
-                    key={`l1-${idx}`}
-                    w={w}
-                    i={idx}
-                    n={totalWords}
-                    p={scrollYProgress}
-                  />
+                  <Word key={`l1-${idx}`} w={w} i={idx} n={totalWords} p={scrollYProgress} />
                 ))}
               </p>
               <p className="block mt-4 md:mt-6">

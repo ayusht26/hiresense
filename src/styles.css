@@ -13,6 +13,14 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-card: 24px;
   --radius-tile: 16px;
+  --radius-pill: 9999px;
+  --color-canvas: var(--canvas);
+  --color-canvas-soft: var(--canvas-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-hairline-soft: var(--hairline-soft);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
@@ -44,12 +52,23 @@
 
 :root {
   --radius: 0.625rem;
+  --radius-sm: 16px;
+  --radius-md: 24px;
+  --radius-full: 9999px;
   --background: #0a0a0a;
   --foreground: #f5f5f5;
+  --canvas: #0a0a0a;
+  --canvas-soft: #141414;
   --surface: #141414;
   --field: #1a1a1a;
   --hairline: rgba(255, 255, 255, 0.1);
+  --hairline-soft: rgba(255, 255, 255, 0.08);
   --hairline-strong: rgba(255, 255, 255, 0.18);
+  --ink: #141414;
+  --ink-soft: #262626;
+  --text: #f5f5f5;
+  --text-muted: #707070;
+  --text-faint: #adadad;
   --faint: #5c5c5c;
   --inverse: #f5f5f5;
   --inverse-foreground: #0a0a0a;
@@ -71,6 +90,42 @@
   --border: rgba(255, 255, 255, 0.1);
   --input: #1a1a1a;
   --ring: #f5f5f5;
+}
+
+.light, [data-theme="light"], .theme-light {
+  --background: #ffffff;
+  --foreground: #141414;
+  --canvas: #ffffff;
+  --canvas-soft: #f3f3f3;
+  --surface: #ffffff;
+  --field: #f0f0f0;
+  --hairline: #e0e0e0;
+  --hairline-soft: #f0f0f0;
+  --hairline-strong: #141414;
+  --ink: #141414;
+  --ink-soft: #262626;
+  --text: #141414;
+  --text-muted: #707070;
+  --text-faint: #adadad;
+  --faint: #adadad;
+  --inverse: #141414;
+  --inverse-foreground: #ffffff;
+  --inverse-muted: #707070;
+  --card: #ffffff;
+  --card-foreground: #141414;
+  --popover: #ffffff;
+  --popover-foreground: #141414;
+  --primary: #141414;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f3f3;
+  --secondary-foreground: #141414;
+  --muted: #f3f3f3;
+  --muted-foreground: #707070;
+  --accent: #0066ff;
+  --accent-foreground: #ffffff;
+  --border: #e0e0e0;
+  --input: #f0f0f0;
+  --ring: #141414;
 }
 
 @layer base {

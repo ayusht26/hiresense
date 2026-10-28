@@ -14,7 +14,10 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RecruiterRouteImport } from './routes/recruiter'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as StudentRouteImport } from './routes/student'
+import { Route as SignupPhotoRouteImport } from './routes/signup_.photo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,9 +44,24 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecruiterRoute = RecruiterRouteImport.update({
+  id: '/recruiter',
+  path: '/recruiter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentRoute = StudentRouteImport.update({
+  id: '/student',
+  path: '/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupPhotoRoute = SignupPhotoRouteImport.update({
+  id: '/signup_/photo',
+  path: '/signup/photo',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -53,7 +71,10 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/recruiter': typeof RecruiterRoute
   '/signup': typeof SignupRoute
+  '/student': typeof StudentRoute
+  '/signup/photo': typeof SignupPhotoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +82,10 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/recruiter': typeof RecruiterRoute
   '/signup': typeof SignupRoute
+  '/student': typeof StudentRoute
+  '/signup/photo': typeof SignupPhotoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,15 +94,45 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/recruiter': typeof RecruiterRoute
   '/signup': typeof SignupRoute
+  '/student': typeof StudentRoute
+  '/signup_/photo': typeof SignupPhotoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/contact' | '/login' | '/privacy' | '/signup'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/login'
+    | '/privacy'
+    | '/recruiter'
+    | '/signup'
+    | '/student'
+    | '/signup/photo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/contact' | '/login' | '/privacy' | '/signup'
+  to:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/login'
+    | '/privacy'
+    | '/recruiter'
+    | '/signup'
+    | '/student'
+    | '/signup/photo'
   id:
-    '__root__' | '/' | '/about' | '/contact' | '/login' | '/privacy' | '/signup'
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/login'
+    | '/privacy'
+    | '/recruiter'
+    | '/signup'
+    | '/student'
+    | '/signup_/photo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -87,7 +141,10 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  RecruiterRoute: typeof RecruiterRoute
   SignupRoute: typeof SignupRoute
+  StudentRoute: typeof StudentRoute
+  SignupPhotoRoute: typeof SignupPhotoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -127,11 +184,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recruiter': {
+      id: '/recruiter'
+      path: '/recruiter'
+      fullPath: '/recruiter'
+      preLoaderRoute: typeof RecruiterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student': {
+      id: '/student'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup_/photo': {
+      id: '/signup_/photo'
+      path: '/signup/photo'
+      fullPath: '/signup/photo'
+      preLoaderRoute: typeof SignupPhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -143,7 +221,10 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  RecruiterRoute: RecruiterRoute,
   SignupRoute: SignupRoute,
+  StudentRoute: StudentRoute,
+  SignupPhotoRoute: SignupPhotoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

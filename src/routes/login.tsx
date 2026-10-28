@@ -1,32 +1,18 @@
-import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
-import { Cursor, Grain, SmoothScroll } from "@/components/hs/Experience";
-import { Logomark } from "@/components/hs/Nav";
-import { AuthCard, type AuthTab } from "@/components/hs/AuthCard";
-import { EASE } from "@/components/hs/motion";
-
-interface AuthSearchParams {
-  tab?: AuthTab;
-}
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect, type FormEvent } from "react";
+import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { AuthLayout } from "@/components/hs/AuthLayout";
+import { SmoothInput, FormField } from "@/components/ui/smooth-input";
+import { supabase, fetchUserProfile } from "@/lib/supabase";
+import { serverLoginFn } from "@/lib/auth-server";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>): AuthSearchParams => {
-    return {
-      tab: search.tab === "signup" ? "signup" : "login",
-    };
-  },
   head: () => ({
     meta: [
-      { title: "Sign in & Sign up — HireSense" },
+      { title: "Log in — HireSense" },
       {
         name: "description",
-        content: "Access your HireSense recruitment workspace or create a new account.",
-      },
-      { property: "og:title", content: "Sign in — HireSense" },
-      {
-        property: "og:description",
-        content: "Auditable, evidence-first recruitment and AI interview platform.",
+        content: "Log in to your HireSense account.",
       },
     ],
   }),
@@ -34,71 +20,218 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const search = useSearch({ from: "/login" });
-  const initialTab: AuthTab = search.tab === "signup" ? "signup" : "login";
+  const navigate = useNavigate();
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Guard: if already logged in, redirect to appropriate role page
+  useEffect(() => {
+    async function checkAlreadyLoggedIn() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const profile = await fetchUserProfile(user.id);
+          const role = user.app_metadata?.role || profile?.role || "student";
+          if (role === "student") {
+            if (!profile?.avatar_step_done) {
+              navigate({ to: "/signup/photo" });
+            } else {
+              navigate({ to: "/student" });
+            }
+          } else {
+            navigate({ to: "/recruiter" });
+          }
+        }
+      } catch (e) {
+        console.error("Session check error:", e);
+      }
+    }
+    checkAlreadyLoggedIn();
+  }, [navigate]);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+
+    const trimmedId = identifier.trim();
+    if (!trimmedId || !password) {
+      setError("Invalid credentials.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      let authUser: { id: string; app_metadata?: { role?: string } } | null = null;
+
+      if (trimmedId.includes("@")) {
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+          email: trimmedId,
+          password,
+        });
+
+        if (authError || !data.user) {
+          setError("Invalid credentials.");
+          setLoading(false);
+          return;
+        }
+        authUser = data.user;
+      } else {
+        // Resolve username server-side
+        const res = await serverLoginFn({
+          data: {
+            identifier: trimmedId,
+            password,
+          },
+        });
+
+        if (!res.success || !res.session) {
+          setError("Invalid credentials.");
+          setLoading(false);
+          return;
+        }
+
+        // Set session on the browser client
+        const { data: sessionData, error: setSessionErr } = await supabase.auth.setSession(
+          res.session as { access_token: string; refresh_token: string },
+        );
+
+        if (setSessionErr || !sessionData.user) {
+          setError("Invalid credentials.");
+          setLoading(false);
+          return;
+        }
+
+        authUser = sessionData.user;
+      }
+
+      if (!authUser) {
+        setError("Invalid credentials.");
+        setLoading(false);
+        return;
+      }
+
+      // Fetch profile to check role and avatar_step_done
+      const profile = await fetchUserProfile(authUser.id);
+      const role = authUser.app_metadata?.role || profile?.role || "student";
+      const avatarDone = profile?.avatar_step_done ?? false;
+
+      if (role === "student") {
+        if (!avatarDone) {
+          navigate({ to: "/signup/photo" });
+        } else {
+          navigate({ to: "/student" });
+        }
+      } else {
+        navigate({ to: "/recruiter" });
+      }
+    } catch (err) {
+      console.error("Login failure:", err);
+      setError("Invalid credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground flex flex-col justify-between overflow-hidden">
-      <SmoothScroll />
-      <Cursor />
-      <Grain />
-
-      {/* Subtle background dot grid */}
-      <div
-        className="pointer-events-none absolute inset-0 dot-grid opacity-35"
-        aria-hidden="true"
-      />
-
-      {/* Ambient center radial vignette */}
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.025),transparent_70%)]"
-        aria-hidden="true"
-      />
-
-      {/* Minimal Top Navigation */}
-      <header className="relative z-20 flex w-full items-center justify-between px-6 py-6 sm:px-10 max-w-[1240px] mx-auto">
-        <Link
-          to="/"
-          className="group flex items-center gap-2.5 font-semibold text-foreground transition-opacity hover:opacity-90"
-        >
-          <Logomark />
-          <span className="text-[17px] font-semibold tracking-tight">HireSense</span>
-        </Link>
-
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface/80 px-4 py-2 text-[13px] font-medium text-muted-foreground backdrop-blur-md transition-colors hover:border-hairline-strong hover:bg-field hover:text-foreground"
-        >
-          <ArrowLeft size={14} />
-          <span>Back to home</span>
-        </Link>
-      </header>
-
-      {/* Centered Auth Card Container */}
-      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
-        <div className="flex flex-col items-center w-full">
-          {/* Card Presentation */}
-          <AuthCard defaultTab={initialTab} />
+    <AuthLayout navLink={{ to: "/signup", label: "Sign up" }}>
+      <div className="w-full rounded-[24px] border border-[rgba(255,255,255,0.10)] bg-[#141414] p-8 sm:p-10 transition-all">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-[36px] font-[650] leading-[1.05] tracking-tight text-[#f5f5f5]">
+            Welcome back.
+          </h1>
+          <p className="mt-2 text-[18px] font-[300] leading-[1.38] text-[#8a8a8a]">
+            Log in with your email or username to continue.
+          </p>
         </div>
-      </main>
 
-      {/* Minimalist Footer Note */}
-      <footer className="relative z-20 pb-6 pt-2 text-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6, ease: EASE }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-2 text-[12px] text-muted-foreground"
-        >
-          <span>© 2026 HireSense Inc.</span>
-          <span className="hidden sm:inline">·</span>
-          <span>Sample interface · illustrative</span>
-          <span className="hidden sm:inline">·</span>
-          <Link to="/privacy" className="transition-colors hover:text-foreground">
-            Privacy & AI Ethics
-          </Link>
-        </motion.div>
-      </footer>
-    </div>
+        {/* Global Error Banner */}
+        {error && (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="mb-6 flex items-center gap-2 rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.15)] p-4 text-[14px] font-[450] text-[#f5f5f5]"
+          >
+            <AlertCircle size={18} className="shrink-0 text-[#f5f5f5]" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <FormField label="Email or username" htmlFor="login-identifier">
+            <SmoothInput
+              id="login-identifier"
+              name="identifier"
+              autoComplete="username"
+              placeholder="e.g. aarav or aarav@example.com"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </FormField>
+
+          <FormField label="Password" htmlFor="login-password">
+            <SmoothInput
+              id="login-password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              required
+              endAdornment={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  className="p-1 text-[#8a8a8a] transition-colors hover:text-[#f5f5f5] focus-visible:outline-none"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              }
+            />
+          </FormField>
+
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex h-12 w-full items-center justify-center rounded-full bg-[#f5f5f5] px-6 text-[15px] font-[600] text-[#0a0a0a] transition-all hover:bg-[#e0e0e0] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-[#f5f5f5]"
+            >
+              {loading ? <Loader2 size={18} className="animate-spin text-[#0a0a0a]" /> : "Log in"}
+            </button>
+          </div>
+        </form>
+
+        {/* Footer Notes & Student Signup Link */}
+        <div className="mt-8 space-y-4 pt-6 text-center border-t border-[rgba(255,255,255,0.10)]">
+          <p className="text-[14px] text-[#8a8a8a]">
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="font-[600] text-[#f5f5f5] underline underline-offset-4 decoration-[#5c5c5c] hover:decoration-[#f5f5f5]"
+            >
+              Create a student account.
+            </Link>
+          </p>
+
+          <p className="text-[12px] text-[#8a8a8a] leading-relaxed">
+            Recruiter accounts are issued by your administrator.
+          </p>
+        </div>
+      </div>
+    </AuthLayout>
   );
 }

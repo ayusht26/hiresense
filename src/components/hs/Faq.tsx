@@ -3,8 +3,14 @@ import { useState } from "react";
 import { EASE, Reveal } from "./motion";
 
 const faqs = [
-  ["Does HireSense reject candidates automatically?", "Only by rules your team configures, and each rule is logged. Recruiters can override any outcome."],
-  ["Which languages does the interview support?", "English, Hindi, and code-mixed speech, with the option to switch mid-interview."],
+  [
+    "Does HireSense reject candidates automatically?",
+    "Only by rules your team configures, and each rule is logged. Recruiters can override any outcome.",
+  ],
+  [
+    "Which languages does the interview support?",
+    "English, Hindi, and code-mixed speech, with the option to switch mid-interview.",
+  ],
   [
     "How is the match score calculated?",
     "A weighted blend of skills, experience, project relevance, education, and responsibilities. Weights are configurable per job family.",
@@ -19,15 +25,25 @@ const faqs = [
 export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section id="faq" aria-labelledby="faq-h" className="container-x pt-20 md:pt-28 pb-20 md:pb-28 lg:pb-32">
+    <section
+      id="faq"
+      aria-labelledby="faq-h"
+      className="container-x pt-20 md:pt-28 pb-20 md:pb-28 lg:pb-32"
+    >
       <Reveal>
-        <h2 id="faq-h" className="text-h2">Questions, answered.</h2>
+        <h2 id="faq-h" className="text-h2">
+          Questions, answered.
+        </h2>
       </Reveal>
       <div className="mt-12 flex max-w-[860px] flex-col gap-3">
         {faqs.map(([q, a], i) => {
           const isOpen = open === i;
           return (
-            <Reveal key={q} delay={i * 0.04} className="rounded-tile border border-hairline bg-surface">
+            <Reveal
+              key={q}
+              delay={i * 0.04}
+              className="rounded-tile border border-hairline bg-surface"
+            >
               <h3>
                 <button
                   className="flex w-full items-center justify-between gap-6 rounded-tile px-6 py-5 text-left text-[17px] font-semibold"

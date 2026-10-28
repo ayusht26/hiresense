@@ -1,10 +1,24 @@
-import { motion, useAnimationFrame, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
+import {
+  motion,
+  useAnimationFrame,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from "framer-motion";
 import { useRef } from "react";
 import { Reveal } from "./motion";
 
 const initials = (n: string) =>
-  ({ "Node.js": "Nd", PostgreSQL: "Pg", TypeScript: "Ts", Kubernetes: "K8", FastAPI: "Fa", JavaScript: "Js" } as Record<string, string>)[n] ??
-  n.slice(0, 2);
+  (
+    ({
+      "Node.js": "Nd",
+      PostgreSQL: "Pg",
+      TypeScript: "Ts",
+      Kubernetes: "K8",
+      FastAPI: "Fa",
+      JavaScript: "Js",
+    }) as Record<string, string>
+  )[n] ?? n.slice(0, 2);
 
 function Row({ items, dir }: { items: string[]; dir: 1 | -1 }) {
   const reduce = useReducedMotion();
@@ -27,7 +41,11 @@ function Row({ items, dir }: { items: string[]; dir: 1 | -1 }) {
     >
       <motion.ul style={{ x }} className="flex w-max gap-12 py-4">
         {list.map((s, i) => (
-          <li key={i} aria-hidden={i >= items.length} className="group flex items-center gap-4 text-muted-foreground transition-colors duration-300 hover:text-foreground">
+          <li
+            key={i}
+            aria-hidden={i >= items.length}
+            className="group flex items-center gap-4 text-muted-foreground transition-colors duration-300 hover:text-foreground"
+          >
             <span className="squircle flex h-14 w-14 items-center justify-center border border-hairline bg-surface text-[16px] font-semibold">
               {initials(s)}
             </span>

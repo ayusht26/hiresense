@@ -15,7 +15,7 @@ export interface ScrollToTargetOptions {
 
 export function scrollToTarget(
   target: string | number | HTMLElement,
-  options?: ScrollToTargetOptions
+  options?: ScrollToTargetOptions,
 ): void {
   if (typeof window === "undefined") return;
 
@@ -77,9 +77,7 @@ export function scrollToTarget(
     }
   } else {
     const el =
-      typeof resolvedTarget === "string"
-        ? document.querySelector(resolvedTarget)
-        : resolvedTarget;
+      typeof resolvedTarget === "string" ? document.querySelector(resolvedTarget) : resolvedTarget;
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
       if (options?.onComplete) {
@@ -90,4 +88,3 @@ export function scrollToTarget(
     }
   }
 }
-

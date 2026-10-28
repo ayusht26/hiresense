@@ -128,8 +128,16 @@ export function Hero() {
     const h = el.offsetHeight;
     mx.set(w * 0.3);
     my.set(h * 0.3);
-    const a = animate(mx, [w * 0.2, w * 0.8, w * 0.5, w * 0.2], { duration: 18, repeat: Infinity, ease: "easeInOut" });
-    const b = animate(my, [h * 0.25, h * 0.4, h * 0.15, h * 0.25], { duration: 14, repeat: Infinity, ease: "easeInOut" });
+    const a = animate(mx, [w * 0.2, w * 0.8, w * 0.5, w * 0.2], {
+      duration: 18,
+      repeat: Infinity,
+      ease: "easeInOut",
+    });
+    const b = animate(my, [h * 0.25, h * 0.4, h * 0.15, h * 0.25], {
+      duration: 14,
+      repeat: Infinity,
+      ease: "easeInOut",
+    });
     return () => {
       a.stop();
       b.stop();
@@ -153,18 +161,17 @@ export function Hero() {
       className="relative flex min-h-screen flex-col items-center overflow-hidden pb-28 pt-36"
     >
       <div aria-hidden className="dot-grid absolute inset-0" />
-      <motion.div aria-hidden className="dot-grid-bright absolute inset-0" style={{ maskImage: mask, WebkitMaskImage: mask }} />
+      <motion.div
+        aria-hidden
+        className="dot-grid-bright absolute inset-0"
+        style={{ maskImage: mask, WebkitMaskImage: mask }}
+      />
 
       <div className="container-x relative flex flex-col items-center text-center">
         <h1 className="text-display max-w-[1100px]">
           {words.map((w, i) =>
             w === "evidence," ? (
-              <EvidenceWord
-                key={w}
-                reduce={reduce}
-                ready={ready}
-                delay={0.1 + i * 0.06}
-              />
+              <EvidenceWord key={w} reduce={reduce} ready={ready} delay={0.1 + i * 0.06} />
             ) : (
               <span key={w} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
                 <motion.span
@@ -177,7 +184,7 @@ export function Hero() {
                 </motion.span>
                 {i < words.length - 1 && <span>&nbsp;</span>}
               </span>
-            )
+            ),
           )}
         </h1>
 
@@ -187,8 +194,8 @@ export function Hero() {
           transition={t(0.5)}
           className="text-lead mt-8 max-w-[600px] text-muted-foreground"
         >
-          HireSense matches resumes to roles, runs multilingual AI interviews, and gives recruiters a report they can audit.
-          People make every decision.
+          HireSense matches resumes to roles, runs multilingual AI interviews, and gives recruiters
+          a report they can audit. People make every decision.
         </motion.p>
 
         <motion.div
@@ -198,9 +205,13 @@ export function Hero() {
           className="mt-10 flex flex-wrap items-center justify-center gap-3"
         >
           <Magnetic>
-            <Link to="/contact" className={btnPrimary}>Request access</Link>
+            <Link to="/contact" className={btnPrimary}>
+              Request access
+            </Link>
           </Magnetic>
-          <a href="#how" className={btnOutline}>See how it works</a>
+          <a href="#how" className={btnOutline}>
+            See how it works
+          </a>
         </motion.div>
 
         <motion.div

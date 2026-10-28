@@ -14,7 +14,8 @@ export const Route = createFileRoute("/about")({
       { property: "og:title", content: "About Us — HireSense" },
       {
         property: "og:description",
-        content: "Built by four engineers on a mission to bring proof and accountability to AI recruitment.",
+        content:
+          "Built by four engineers on a mission to bring proof and accountability to AI recruitment.",
       },
     ],
   }),
@@ -87,16 +88,15 @@ function AboutPage() {
           </Reveal>
 
           <Reveal delay={0.08}>
-            <h1 className="text-display mt-6 font-semibold">
-              Built so people can check the work.
-            </h1>
+            <h1 className="text-display mt-6 font-semibold">Built so people can check the work.</h1>
           </Reveal>
 
           <Reveal delay={0.16}>
             <p className="text-lead mt-8 text-muted-foreground">
               HireSense was started by four engineers who saw recruitment software drifting toward
-              opaque black boxes. We are building an architecture where semantic AI matches resumes to roles
-              and transcribes multilingual interviews, while leaving accountability firmly in human hands.
+              opaque black boxes. We are building an architecture where semantic AI matches resumes
+              to roles and transcribes multilingual interviews, while leaving accountability firmly
+              in human hands.
             </p>
           </Reveal>
         </div>
@@ -108,7 +108,8 @@ function AboutPage() {
           <div className="border-t border-hairline pt-12">
             <h2 className="text-h2 font-semibold">The founders.</h2>
             <p className="mt-3 max-w-[640px] text-muted-foreground">
-              Engineers united by a commitment to explainable machine intelligence, distributed reliability, and candidate respect.
+              Engineers united by a commitment to explainable machine intelligence, distributed
+              reliability, and candidate respect.
             </p>
           </div>
         </Reveal>
@@ -124,15 +125,15 @@ function AboutPage() {
                       {f.initials}
                     </span>
                     <div>
-                      <h3 className="text-[22px] font-semibold tracking-tight text-foreground">{f.name}</h3>
+                      <h3 className="text-[22px] font-semibold tracking-tight text-foreground">
+                        {f.name}
+                      </h3>
                       <p className="mt-0.5 text-[14px] text-muted-foreground">{f.role}</p>
                     </div>
                   </div>
 
                   {/* Bio */}
-                  <p className="mt-5 text-[15px] leading-relaxed text-muted-foreground">
-                    {f.bio}
-                  </p>
+                  <p className="mt-5 text-[15px] leading-relaxed text-muted-foreground">{f.bio}</p>
                 </div>
 
                 {/* Bottom: Contact & Links */}
@@ -149,7 +150,11 @@ function AboutPage() {
                         stroke="currentColor"
                         strokeWidth="2"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
                       </svg>
                       <span>{f.email}</span>
                     </a>
@@ -210,11 +215,17 @@ function AboutPage() {
         <Reveal>
           <div className="rounded-card border border-hairline bg-surface p-8 md:p-12">
             <div className="max-w-[720px]">
-              <span className="text-[13px] font-semibold text-muted-foreground">Engineering Outlook</span>
-              <h2 className="text-h3 mt-2 font-semibold">Built in the open. Tested against real constraints.</h2>
+              <span className="text-[13px] font-semibold text-muted-foreground">
+                Engineering Outlook
+              </span>
+              <h2 className="text-h3 mt-2 font-semibold">
+                Built in the open. Tested against real constraints.
+              </h2>
               <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">
-                We are currently running private evaluations with hiring partners across technical and customer-facing roles.
-                If you are interested in running a pilot on our evidence-first screening workflow or testing Indian multilingual speech models, we would love to connect.
+                We are currently running private evaluations with hiring partners across technical
+                and customer-facing roles. If you are interested in running a pilot on our
+                evidence-first screening workflow or testing Indian multilingual speech models, we
+                would love to connect.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link to="/contact" className={btnPrimary}>

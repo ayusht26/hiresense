@@ -62,7 +62,12 @@ export function Magnetic({ children, className }: { children: ReactNode; classNa
   };
 
   return (
-    <div ref={ref} onPointerMove={onMove} onPointerLeave={reset} className={`-m-[40px] inline-block p-[40px] ${className ?? ""}`}>
+    <div
+      ref={ref}
+      onPointerMove={onMove}
+      onPointerLeave={reset}
+      className={`-m-[40px] inline-block p-[40px] ${className ?? ""}`}
+    >
       <motion.div style={{ x: sx, y: sy }}>{children}</motion.div>
     </div>
   );

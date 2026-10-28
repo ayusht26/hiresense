@@ -1,4 +1,11 @@
-import { animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import {
+  animate,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { EASE } from "./motion";
 
@@ -40,10 +47,7 @@ function FastApiLogo({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none">
       <circle cx="12" cy="12" r="11" fill="#05998B" />
-      <path
-        d="M12.8 4L6.8 13.2h4.8l-1.6 6.8 7.2-9.6h-5.2l1.8-6.4z"
-        fill="#FFFFFF"
-      />
+      <path d="M12.8 4L6.8 13.2h4.8l-1.6 6.8 7.2-9.6h-5.2l1.8-6.4z" fill="#FFFFFF" />
     </svg>
   );
 }
@@ -148,11 +152,7 @@ function Dot({ status, on, delay }: { status: Status; on: boolean; delay: number
   );
 }
 
-export function HeroVisual({
-  start,
-}: {
-  start: boolean;
-}) {
+export function HeroVisual({ start }: { start: boolean }) {
   const reduce = useReducedMotion();
   const [phase, setPhase] = useState(0);
   const [cycle, setCycle] = useState(0);
@@ -195,7 +195,7 @@ export function HeroVisual({
       timers = PHASE_AT.map((at, i) =>
         setTimeout(() => {
           setPhase(i);
-        }, at)
+        }, at),
       );
 
       // Schedule next iteration at LOOP, but pause while user is actively hovering the window
@@ -206,7 +206,7 @@ export function HeroVisual({
             return;
           }
           schedule();
-        }, LOOP)
+        }, LOOP),
       );
     };
 
@@ -282,7 +282,10 @@ export function HeroVisual({
   const score = useMotionValue(reduce ? 82 : 0);
   const rounded = useTransform(score, (v) => Math.round(v).toString());
   useEffect(() => {
-    const c = animate(score, scored ? 82 : 0, { duration: reduce ? 0 : scored ? 1.4 : 0.5, ease: EASE });
+    const c = animate(score, scored ? 82 : 0, {
+      duration: reduce ? 0 : scored ? 1.4 : 0.5,
+      ease: EASE,
+    });
     return () => c.stop();
   }, [scored, reduce, score]);
 
@@ -327,7 +330,9 @@ export function HeroVisual({
                 aria-label="Expand"
               />
             </div>
-            <span className="text-[12px] font-medium text-muted-foreground">Sample report · illustrative</span>
+            <span className="text-[12px] font-medium text-muted-foreground">
+              Sample report · illustrative
+            </span>
           </div>
 
           <button
@@ -370,18 +375,30 @@ export function HeroVisual({
                       className="truncate text-[14px]"
                       initial={false}
                       animate={{ color: active ? "var(--foreground)" : "var(--faint)" }}
-                      transition={{ duration: 0.3, delay: active && phase === 1 ? lineDelay(i) : 0 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: active && phase === 1 ? lineDelay(i) : 0,
+                      }}
                     >
                       {l.hl ? (
                         <>
                           {l.text.slice(0, l.text.indexOf(l.hl[0]))}
-                          <span ref={(el) => { hlRefs.current[i] = el; }} className="relative inline-block px-0.5">
+                          <span
+                            ref={(el) => {
+                              hlRefs.current[i] = el;
+                            }}
+                            className="relative inline-block px-0.5"
+                          >
                             <motion.span
                               aria-hidden
                               className="absolute inset-0 origin-left rounded-[4px] bg-field"
                               initial={false}
                               animate={{ scaleX: active ? 1 : 0 }}
-                              transition={{ duration: 0.5, ease: EASE, delay: active && phase === 1 ? lineDelay(i) + 0.15 : 0 }}
+                              transition={{
+                                duration: 0.5,
+                                ease: EASE,
+                                delay: active && phase === 1 ? lineDelay(i) + 0.15 : 0,
+                              }}
                             />
                             <span className="relative">{l.hl[0]}</span>
                           </span>
@@ -395,8 +412,13 @@ export function HeroVisual({
                       className="block h-2 rounded-full"
                       style={{ width: `${l.w}%` }}
                       initial={false}
-                      animate={{ backgroundColor: active ? "var(--hairline-strong)" : "var(--field)" }}
-                      transition={{ duration: 0.3, delay: active && phase === 1 ? lineDelay(i) : 0 }}
+                      animate={{
+                        backgroundColor: active ? "var(--hairline-strong)" : "var(--field)",
+                      }}
+                      transition={{
+                        duration: 0.3,
+                        delay: active && phase === 1 ? lineDelay(i) : 0,
+                      }}
                     />
                   )}
                 </motion.div>
@@ -408,8 +430,12 @@ export function HeroVisual({
                   aria-hidden
                   className="pointer-events-none absolute -inset-x-2 inset-y-0"
                   initial={{ y: "0%", opacity: 0 }}
-                  animate={phase === 1 ? { y: "100%", opacity: [0, 1, 1, 0] } : { y: "0%", opacity: 0 }}
-                  transition={phase === 1 ? { duration: SCAN_DUR, ease: "linear" } : { duration: 0 }}
+                  animate={
+                    phase === 1 ? { y: "100%", opacity: [0, 1, 1, 0] } : { y: "0%", opacity: 0 }
+                  }
+                  transition={
+                    phase === 1 ? { duration: SCAN_DUR, ease: "linear" } : { duration: 0 }
+                  }
                 >
                   <div className="relative h-px w-full bg-foreground">
                     <span className="absolute -left-1 -top-[3px] h-[7px] w-[7px] rounded-full bg-accent" />
@@ -421,13 +447,18 @@ export function HeroVisual({
 
           {/* Right Column: Requirement Matrix */}
           <div>
-            <div className="mb-5 text-[12px] font-semibold text-muted-foreground">Requirement matrix</div>
+            <div className="mb-5 text-[12px] font-semibold text-muted-foreground">
+              Requirement matrix
+            </div>
             <ul className="space-y-2">
               {rows.map((r, i) => {
                 const lit = chips || (reduce && phase === 4);
                 const IconComponent = r.Icon;
                 return (
-                  <li key={r.name} className="flex items-center justify-between rounded-tile bg-field px-3.5 py-2.5">
+                  <li
+                    key={r.name}
+                    className="flex items-center justify-between rounded-tile bg-field px-3.5 py-2.5"
+                  >
                     <div className="flex min-w-0 items-center gap-2.5">
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-hairline/60 bg-surface/90">
                         <IconComponent className="h-4 w-4 shrink-0" />
@@ -435,7 +466,10 @@ export function HeroVisual({
                       <motion.span
                         className="truncate text-[14px]"
                         initial={false}
-                        animate={{ color: lit && r.status !== "unclear" ? "var(--foreground)" : "var(--faint)" }}
+                        animate={{
+                          color:
+                            lit && r.status !== "unclear" ? "var(--foreground)" : "var(--faint)",
+                        }}
                         transition={{ duration: 0.3, delay: lit ? rowDelay(i) : 0 }}
                       >
                         {r.name}
@@ -453,7 +487,12 @@ export function HeroVisual({
                           unclear
                         </motion.span>
                       )}
-                      <span ref={(el) => { dotRefs.current[i] = el; }} className="inline-flex">
+                      <span
+                        ref={(el) => {
+                          dotRefs.current[i] = el;
+                        }}
+                        className="inline-flex"
+                      >
                         <Dot status={r.status} on={lit} delay={rowDelay(i)} />
                       </span>
                     </span>
@@ -491,7 +530,10 @@ export function HeroVisual({
 
           {/* Connectors + Chips (Desktop layout only) */}
           {!reduce && (
-            <svg aria-hidden className="pointer-events-none absolute inset-0 hidden h-full w-full overflow-visible md:block">
+            <svg
+              aria-hidden
+              className="pointer-events-none absolute inset-0 hidden h-full w-full overflow-visible md:block"
+            >
               {Object.entries(paths).map(([k, d]) => {
                 const i = Number(k);
                 return (
@@ -527,7 +569,9 @@ export function HeroVisual({
                       ? { offsetDistance: "100%", opacity: [0, 1, 1, 0] }
                       : { offsetDistance: "0%", opacity: 0 }
                   }
-                  transition={chips ? { duration: 1.2, ease: EASE, delay: 0.3 + i * 0.12 } : { duration: 0 }}
+                  transition={
+                    chips ? { duration: 1.2, ease: EASE, delay: 0.3 + i * 0.12 } : { duration: 0 }
+                  }
                 >
                   <ChipIcon className="h-3 w-3 shrink-0" />
                   <span>{r.chipLabel ?? r.name}</span>

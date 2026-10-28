@@ -72,9 +72,7 @@ function ContactPage() {
           </Reveal>
 
           <Reveal delay={0.08}>
-            <h1 className="text-display mt-6 font-semibold">
-              Get in touch.
-            </h1>
+            <h1 className="text-display mt-6 font-semibold">Get in touch.</h1>
           </Reveal>
 
           <Reveal delay={0.16}>
@@ -90,32 +88,38 @@ function ContactPage() {
           <Reveal delay={0.24}>
             <div className="space-y-8">
               <div className="rounded-card border border-hairline bg-surface p-8">
-                <span className="text-[13px] font-semibold text-muted-foreground">Direct Email</span>
+                <span className="text-[13px] font-semibold text-muted-foreground">
+                  Direct Email
+                </span>
                 <p className="mt-2 text-[20px] font-semibold text-foreground">
-                  <a
-                    href="mailto:hello@hiresense.online"
-                    className="hover:underline"
-                  >
+                  <a href="mailto:hello@hiresense.online" className="hover:underline">
                     hello@hiresense.online
                   </a>
                 </p>
                 <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
-                  Direct inbox monitored by the founding engineers. You will receive a thoughtful human reply within 24 business hours.
+                  Direct inbox monitored by the founding engineers. You will receive a thoughtful
+                  human reply within 24 business hours.
                 </p>
               </div>
 
               <div className="space-y-6">
                 <div className="border-t border-hairline pt-6">
-                  <h3 className="text-[17px] font-semibold text-foreground">Early Access Inquiries</h3>
+                  <h3 className="text-[17px] font-semibold text-foreground">
+                    Early Access Inquiries
+                  </h3>
                   <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">
-                    Interested in evaluating our requirement extraction or running simulated interviews for your open roles? Drop us your current role requirements.
+                    Interested in evaluating our requirement extraction or running simulated
+                    interviews for your open roles? Drop us your current role requirements.
                   </p>
                 </div>
 
                 <div className="border-t border-hairline pt-6">
-                  <h3 className="text-[17px] font-semibold text-foreground">Technical Discussion</h3>
+                  <h3 className="text-[17px] font-semibold text-foreground">
+                    Technical Discussion
+                  </h3>
                   <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">
-                    Curious about our event-level proctoring signals, gaze metrics, or skill normalization pipeline? We welcome in-depth technical inquiries.
+                    Curious about our event-level proctoring signals, gaze metrics, or skill
+                    normalization pipeline? We welcome in-depth technical inquiries.
                   </p>
                 </div>
 
@@ -142,13 +146,19 @@ function ContactPage() {
                     className="py-12 text-center"
                   >
                     <span className="squircle inline-flex h-14 w-14 items-center justify-center border border-hairline bg-field text-foreground">
-                      <svg className="h-6 w-6 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2">
+                      <svg
+                        className="h-6 w-6 stroke-current"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </span>
                     <h3 className="text-h3 mt-6 font-semibold">Message delivered.</h3>
                     <p className="mt-3 text-[15px] text-muted-foreground">
-                      Thank you for reaching out, {name}. Our team has received your message and will follow up at {email} shortly.
+                      Thank you for reaching out, {name}. Our team has received your message and
+                      will follow up at {email} shortly.
                     </p>
                     <button
                       onClick={() => {
@@ -161,12 +171,7 @@ function ContactPage() {
                     </button>
                   </motion.div>
                 ) : (
-                  <motion.form
-                    key="form"
-                    onSubmit={handleSubmit}
-                    noValidate
-                    className="space-y-6"
-                  >
+                  <motion.form key="form" onSubmit={handleSubmit} noValidate className="space-y-6">
                     <div>
                       <h2 className="text-[22px] font-semibold tracking-tight text-foreground">
                         Send a message
@@ -184,7 +189,10 @@ function ContactPage() {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="name" className="block text-[13px] font-semibold text-muted-foreground">
+                        <label
+                          htmlFor="name"
+                          className="block text-[13px] font-semibold text-muted-foreground"
+                        >
                           Full Name *
                         </label>
                         <input
@@ -202,7 +210,10 @@ function ContactPage() {
                       </div>
 
                       <div>
-                        <label htmlFor="contact-email" className="block text-[13px] font-semibold text-muted-foreground">
+                        <label
+                          htmlFor="contact-email"
+                          className="block text-[13px] font-semibold text-muted-foreground"
+                        >
                           Email Address *
                         </label>
                         <input
@@ -221,8 +232,12 @@ function ContactPage() {
                     </div>
 
                     <div>
-                      <label htmlFor="company" className="block text-[13px] font-semibold text-muted-foreground">
-                        Company or Team <span className="text-[12px] font-normal text-faint">(Optional)</span>
+                      <label
+                        htmlFor="company"
+                        className="block text-[13px] font-semibold text-muted-foreground"
+                      >
+                        Company or Team{" "}
+                        <span className="text-[12px] font-normal text-faint">(Optional)</span>
                       </label>
                       <input
                         id="company"
@@ -257,7 +272,10 @@ function ContactPage() {
                     </div>
 
                     <div>
-                      <label htmlFor="message" className="block text-[13px] font-semibold text-muted-foreground">
+                      <label
+                        htmlFor="message"
+                        className="block text-[13px] font-semibold text-muted-foreground"
+                      >
                         Message *
                       </label>
                       <textarea

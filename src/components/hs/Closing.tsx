@@ -24,7 +24,11 @@ export function Footer() {
                   Log in
                 </Link>
               </li>
-              <li><Link to="/login" className="transition-colors hover:text-inverse-foreground">Log in</Link></li>
+              <li>
+                <Link to="/login" className="transition-colors hover:text-inverse-foreground">
+                  Log in
+                </Link>
+              </li>
             </ul>
           </nav>
           <nav aria-label="Company">

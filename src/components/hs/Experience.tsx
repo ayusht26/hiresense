@@ -1,4 +1,13 @@
-import { AnimatePresence, frame, cancelFrame, motion, useMotionValue, useReducedMotion, useScroll, useSpring } from "framer-motion";
+import {
+  AnimatePresence,
+  frame,
+  cancelFrame,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+} from "framer-motion";
 import { useEffect, useState } from "react";
 import { EASE } from "./motion";
 import { scrollToTarget } from "@/lib/scroll";
@@ -130,9 +139,17 @@ export function Cursor() {
 
 export function Grain() {
   return (
-    <svg aria-hidden className="pointer-events-none fixed inset-0 z-[55] h-full w-full opacity-[0.04]">
+    <svg
+      aria-hidden
+      className="pointer-events-none fixed inset-0 z-[55] h-full w-full opacity-[0.04]"
+    >
       <filter id="hs-grain">
-        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.85"
+          numOctaves="2"
+          stitchTiles="stitch"
+        />
       </filter>
       <rect width="100%" height="100%" filter="url(#hs-grain)" />
     </svg>
