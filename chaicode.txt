@@ -7,5 +7,15 @@ timestamps
 1:43:20
 
 some more changes
-    - implement a login page
+
 - setup a supabase database
+Public datasets for prototyping
+- Resume Entities for NER (DataTurks/Kaggle): annotated resume entities for resume NER experiments.
+
+- Resume NER Training Dataset on Hugging Face: 22,855 training examples with entities including skills, education, experience, organization and contact information. Verify license/usage terms before commercial use.
+
+- Indian Job Market Dataset 2025: a Kaggle dataset describing 97k+ India-focused job listings with titles, skills, experience and job-description fields; its listed license is CC BY-NC-SA 4.0
+
+- Data Science Job Market dataset: 7,000+ job opportunities with title, location, experience, job description and skills; listed as CC0 on its Kaggle page.
+
+- CareerCorpus resume dataset: 302 anonymized, expert-annotated resumes across six categories, useful as a small evaluation set
