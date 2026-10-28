@@ -38,14 +38,10 @@ function SignupPage() {
           const { fetchUserProfile } = await import("@/lib/supabase");
           const profile = await fetchUserProfile(user.id);
           const role = user.app_metadata?.role || profile?.role || "student";
-          if (role === "student") {
-            if (!profile?.avatar_step_done) {
-              navigate({ to: "/signup/photo" });
-            } else {
-              navigate({ to: "/student" });
-            }
+          if (role === "student" && !profile?.avatar_step_done) {
+            navigate({ to: "/signup/photo" });
           } else {
-            navigate({ to: "/recruiter" });
+            navigate({ to: "/dashboard" });
           }
         }
       } catch (e) {
@@ -254,8 +250,8 @@ function SignupPage() {
   if (needsEmailConfirm) {
     return (
       <AuthLayout navLink={{ to: "/login", label: "Log in" }}>
-        <div className="w-full rounded-[24px] border border-[#f0f0f0] bg-white p-8 sm:p-10 text-center transition-all">
-          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0f0f0] text-[#141414]">
+        <div className="w-full rounded-[24px] border border-[rgba(255,255,255,0.10)] bg-[#141414] p-8 sm:p-10 text-center transition-all shadow-2xl">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#1a1a1a] border border-[rgba(255,255,255,0.10)] text-[#f5f5f5]">
             <MailCheck size={28} />
           </div>
 
@@ -264,14 +260,14 @@ function SignupPage() {
           </h1>
           <p className="mt-3 text-[16px] font-[300] leading-[1.45] text-[#8a8a8a]">
             We sent a confirmation link to{" "}
-            <span className="font-medium text-[#f5f5f5]">{email}</span>. Click the link to activate
-            your student account and complete your profile.
+            <span className="font-semibold text-[#f5f5f5]">{email}</span>. Click the link to
+            activate your student account and complete your profile.
           </p>
 
           <div className="mt-8 pt-6 border-t border-[rgba(255,255,255,0.10)]">
             <Link
               to="/login"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-[#f5f5f5] px-8 text-[15px] font-[600] text-[#0a0a0a] transition-all hover:bg-[#e0e0e0]"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-[#f5f5f5] px-8 text-[15px] font-[600] text-[#0a0a0a] transition-all hover:bg-[#e0e0e0] active:scale-[0.98]"
             >
               Return to log in
             </Link>

@@ -45,15 +45,9 @@ function SignupPhotoPage() {
           return;
         }
 
-        // Recruiters never see this page
-        if (userProfile.role !== "student") {
-          navigate({ to: "/recruiter" });
-          return;
-        }
-
-        // If already done, proceed to /student
-        if (userProfile.avatar_step_done) {
-          navigate({ to: "/student" });
+        // Non-students or users who already completed photo step proceed directly to /dashboard
+        if (userProfile.role !== "student" || userProfile.avatar_step_done) {
+          navigate({ to: "/dashboard" });
           return;
         }
 
@@ -117,7 +111,7 @@ function SignupPhotoPage() {
         return;
       }
 
-      navigate({ to: "/student" });
+      navigate({ to: "/dashboard" });
     } catch (err) {
       console.error("Finish error:", err);
       setError("An unexpected error occurred. Please try again.");
@@ -146,7 +140,7 @@ function SignupPhotoPage() {
         return;
       }
 
-      navigate({ to: "/student" });
+      navigate({ to: "/dashboard" });
     } catch (err) {
       console.error("Skip error:", err);
       setError("An unexpected error occurred. Please try again.");

@@ -37,14 +37,10 @@ function LoginPage() {
         if (user) {
           const profile = await fetchUserProfile(user.id);
           const role = user.app_metadata?.role || profile?.role || "student";
-          if (role === "student") {
-            if (!profile?.avatar_step_done) {
-              navigate({ to: "/signup/photo" });
-            } else {
-              navigate({ to: "/student" });
-            }
+          if (role === "student" && !profile?.avatar_step_done) {
+            navigate({ to: "/signup/photo" });
           } else {
-            navigate({ to: "/recruiter" });
+            navigate({ to: "/dashboard" });
           }
         }
       } catch (e) {
@@ -122,14 +118,10 @@ function LoginPage() {
       const role = authUser.app_metadata?.role || profile?.role || "student";
       const avatarDone = profile?.avatar_step_done ?? false;
 
-      if (role === "student") {
-        if (!avatarDone) {
-          navigate({ to: "/signup/photo" });
-        } else {
-          navigate({ to: "/student" });
-        }
+      if (role === "student" && !avatarDone) {
+        navigate({ to: "/signup/photo" });
       } else {
-        navigate({ to: "/recruiter" });
+        navigate({ to: "/dashboard" });
       }
     } catch (err) {
       console.error("Login failure:", err);

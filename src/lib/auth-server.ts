@@ -58,6 +58,8 @@ export const serverLoginFn = createServerFn({ method: "POST" })
         // Fallback for demo/test accounts when service role key is not yet set
         if (identifier.toLowerCase() === "hiresense_recruiter") {
           emailToUse = "hiresense_recruiter@recruiters.hiresense.online";
+        } else if (identifier.toLowerCase() === "hiresense_student") {
+          emailToUse = "hiresense_student@students.hiresense.online";
         } else if (identifier.toLowerCase() === "student_634581") {
           emailToUse = "hiresense.student.634581@gmail.com";
         } else {

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { UserRoundSearch } from "lucide-react";
 import { EASE, btnPrimary } from "./motion";
 import { scrollToTarget } from "@/lib/scroll";
+import { supabase } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
 
 export function Logomark({ dark = false, className = "" }: { dark?: boolean; className?: string }) {
   return (
@@ -28,9 +30,24 @@ export function Nav() {
   const { scrollY } = useScroll();
   const last = useRef(0);
   const [hidden, setHidden] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const router = useRouter();
   const isProgrammaticScroll = useRef(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   // If user manually touches wheel or touchmove while scrolling, yield control
   useEffect(() => {
@@ -159,16 +176,29 @@ export function Nav() {
           })}
         </ul>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <Link
-            to="/login"
-            className={`rounded-full px-3.5 py-2 text-[14px] font-semibold transition-colors ${
-              pathname === "/login"
-                ? "bg-field text-foreground"
-                : "text-muted-foreground hover:bg-field hover:text-foreground"
-            }`}
-          >
-            Log in
-          </Link>
+          {session ? (
+            <Link
+              to="/dashboard"
+              className={`rounded-full px-4 py-2 text-[14px] font-semibold transition-colors ${
+                pathname === "/dashboard"
+                  ? "bg-field text-foreground"
+                  : "text-muted-foreground hover:bg-field hover:text-foreground"
+              }`}
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className={`rounded-full px-3.5 py-2 text-[14px] font-semibold transition-colors ${
+                pathname === "/login"
+                  ? "bg-field text-foreground"
+                  : "text-muted-foreground hover:bg-field hover:text-foreground"
+              }`}
+            >
+              Log in
+            </Link>
+          )}
           <Link to="/contact" className={`${btnPrimary} h-10 px-4 sm:px-5 text-[14px]`}>
             Request access
           </Link>

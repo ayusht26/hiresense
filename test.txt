@@ -1,0 +1,72 @@
+======================================================================
+HIRESENSE — TEST CREDENTIALS, DASHBOARD & AUTH GUIDE
+======================================================================
+
+1. RECRUITER TEST ACCOUNT
+----------------------------------------------------------------------
+Username: hiresense_recruiter
+Email:    hiresense_recruiter@recruiters.hiresense.online
+Password: Hs_Recruiter!2026_xK9mP2vL
+Role:     recruiter
+Company:  HireSense Demo Co
+Lands on: /dashboard (Automatically renders Recruiter Workspace)
+
+
+2. STUDENT TEST ACCOUNT
+----------------------------------------------------------------------
+Username: hiresense_student
+Email:    hiresense_student@students.hiresense.online
+Password: Hs_Student!2026_vP8mQ1xZ
+Role:     student
+Lands on: /signup/photo (first time only) -> /dashboard (Student Workspace)
+
+
+3. ALTERNATE STUDENT ACCOUNT (Photo Step Already Done)
+----------------------------------------------------------------------
+Username: student_634581
+Email:    hiresense.student.634581@gmail.com
+Password: TestPassword!123
+Role:     student
+Lands on: /dashboard (Immediately renders Student Workspace)
+
+
+======================================================================
+DASHBOARD & NAVIGATION BEHAVIOR
+======================================================================
+- Single Unified URL: Both recruiters and students navigate to /dashboard.
+  The page automatically detects the account role from Supabase and
+  renders the tailored workspace.
+- Landing Page Smart Nav: When you are logged in, the "Log in" button on
+  the landing page navigation automatically changes to "Dashboard"
+  linking directly to /dashboard.
+- Direct Route Compatibility: Visiting /recruiter or /student directly
+  will automatically redirect you to /dashboard.
+
+
+======================================================================
+HOW TO FIX "EMAIL RATE LIMIT EXCEEDED" IN SUPABASE
+======================================================================
+Why this happens:
+Supabase free tier uses a shared transactional email service with an
+internal limit of ~3 to 4 emails per hour to prevent spam.
+
+Option A — Disable "Confirm email" (Fastest for Development & Testing):
+1. Open your Supabase Project Dashboard:
+   https://supabase.com/dashboard/project/vglqudbftkybegdrqdec
+2. Navigate to: Authentication (left sidebar) -> Providers -> Email
+3. Scroll to "Confirm email" and toggle it OFF.
+4. Click "Save" at the bottom right.
+-> Now users can sign up and are immediately verified and able to log in,
+   with ZERO emails sent and ZERO rate limits encountered.
+
+Option B — Connect Custom SMTP (Recommended for Production):
+1. In the Supabase Dashboard, go to Project Settings -> Authentication.
+2. Scroll to "SMTP Settings" and toggle "Enable Custom SMTP".
+3. Use a transactional provider such as Resend, SendGrid, or Postmark:
+   - Host: smtp.resend.com
+   - Port: 465 (SSL) or 587 (TLS)
+   - User: resend
+   - Password: [your-resend-api-key]
+   - Sender Email: auth@hiresense.online (or your verified domain email)
+4. Click "Save". This removes all Supabase shared email rate limits.
+======================================================================
