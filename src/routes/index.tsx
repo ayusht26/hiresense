@@ -1,6 +1,6 @@
 import { createFileRoute, useRouterState } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { Cursor, Grain, Preloader, ScrollProgress, SmoothScroll } from "@/components/hs/Experience";
+import { useEffect, useState } from "react";
+import { Cursor, Grain, ScrollProgress, SmoothScroll } from "@/components/hs/Experience";
 import { ReadyContext } from "@/components/hs/motion";
 import { Nav } from "@/components/hs/Nav";
 import { Hero } from "@/components/hs/Hero";
@@ -29,12 +29,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [ready, setReady] = useState(false);
-  const onDone = useCallback(() => setReady(true), []);
+  const ready = true;
   const hash = useRouterState({ select: (s) => s.location.hash });
 
   useEffect(() => {
-    if (!ready) return;
     const targetHash = hash || (typeof window !== "undefined" ? window.location.hash : "");
     if (targetHash && targetHash.length > 1) {
       const formatted = targetHash.startsWith("#") ? targetHash : `#${targetHash}`;
@@ -43,7 +41,7 @@ function Index() {
       }, 80);
       return () => clearTimeout(t);
     }
-  }, [ready, hash]);
+  }, [hash]);
 
   return (
     <ReadyContext.Provider value={ready}>
@@ -51,7 +49,6 @@ function Index() {
       <ScrollProgress />
       <Cursor />
       <Grain />
-      <Preloader onDone={onDone} />
       <Nav />
       <main>
         <Hero />

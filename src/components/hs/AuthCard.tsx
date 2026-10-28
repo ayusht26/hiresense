@@ -321,3 +321,4 @@ export function AuthCard({ defaultTab = "signup", onTabChange }: AuthCardProps) 
     </div>
   );
 }
+
