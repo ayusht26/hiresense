@@ -24,5 +24,3 @@ function RecruiterRedirect() {
     </div>
   );
 }
-
-export default RecruiterRedirect;

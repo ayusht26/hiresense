@@ -24,5 +24,3 @@ function StudentRedirect() {
     </div>
   );
 }
-
-export default StudentRedirect;

@@ -101,5 +101,3 @@ function JobApplyPlaceholderPage() {
     </div>
   );
 }
-
-export default JobApplyPlaceholderPage;
