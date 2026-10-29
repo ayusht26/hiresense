@@ -19,6 +19,8 @@ import { Route as RecruiterRouteImport } from './routes/recruiter'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as StudentRouteImport } from './routes/student'
 import { Route as SignupPhotoRouteImport } from './routes/signup_.photo'
+import { Route as StudentIndexRouteImport } from './routes/student.index'
+import { Route as StudentUsernameRouteImport } from './routes/student.$username'
 import { Route as JobsJobIdApplyRouteImport } from './routes/jobs.$jobId.apply'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +73,16 @@ const SignupPhotoRoute = SignupPhotoRouteImport.update({
   path: '/signup/photo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudentIndexRoute = StudentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentUsernameRoute = StudentUsernameRouteImport.update({
+  id: '/$username',
+  path: '/$username',
+  getParentRoute: () => StudentRoute,
+} as any)
 const JobsJobIdApplyRoute = JobsJobIdApplyRouteImport.update({
   id: '/jobs/$jobId/apply',
   path: '/jobs/$jobId/apply',
@@ -86,8 +98,10 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/recruiter': typeof RecruiterRoute
   '/signup': typeof SignupRoute
-  '/student': typeof StudentRoute
+  '/student': typeof StudentRouteWithChildren
   '/signup/photo': typeof SignupPhotoRoute
+  '/student/$username': typeof StudentUsernameRoute
+  '/student/': typeof StudentIndexRoute
   '/jobs/$jobId/apply': typeof JobsJobIdApplyRoute
 }
 export interface FileRoutesByTo {
@@ -99,8 +113,9 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/recruiter': typeof RecruiterRoute
   '/signup': typeof SignupRoute
-  '/student': typeof StudentRoute
   '/signup/photo': typeof SignupPhotoRoute
+  '/student/$username': typeof StudentUsernameRoute
+  '/student': typeof StudentIndexRoute
   '/jobs/$jobId/apply': typeof JobsJobIdApplyRoute
 }
 export interface FileRoutesById {
@@ -113,8 +128,10 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/recruiter': typeof RecruiterRoute
   '/signup': typeof SignupRoute
-  '/student': typeof StudentRoute
+  '/student': typeof StudentRouteWithChildren
   '/signup_/photo': typeof SignupPhotoRoute
+  '/student/$username': typeof StudentUsernameRoute
+  '/student/': typeof StudentIndexRoute
   '/jobs/$jobId/apply': typeof JobsJobIdApplyRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +147,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/student'
     | '/signup/photo'
+    | '/student/$username'
+    | '/student/'
     | '/jobs/$jobId/apply'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -141,8 +160,9 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/recruiter'
     | '/signup'
-    | '/student'
     | '/signup/photo'
+    | '/student/$username'
+    | '/student'
     | '/jobs/$jobId/apply'
   id:
     | '__root__'
@@ -156,6 +176,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/student'
     | '/signup_/photo'
+    | '/student/$username'
+    | '/student/'
     | '/jobs/$jobId/apply'
   fileRoutesById: FileRoutesById
 }
@@ -168,7 +190,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RecruiterRoute: typeof RecruiterRoute
   SignupRoute: typeof SignupRoute
-  StudentRoute: typeof StudentRoute
+  StudentRoute: typeof StudentRouteWithChildren
   SignupPhotoRoute: typeof SignupPhotoRoute
   JobsJobIdApplyRoute: typeof JobsJobIdApplyRoute
 }
@@ -245,6 +267,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupPhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/student/': {
+      id: '/student/'
+      path: '/'
+      fullPath: '/student/'
+      preLoaderRoute: typeof StudentIndexRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/$username': {
+      id: '/student/$username'
+      path: '/$username'
+      fullPath: '/student/$username'
+      preLoaderRoute: typeof StudentUsernameRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/jobs/$jobId/apply': {
       id: '/jobs/$jobId/apply'
       path: '/jobs/$jobId/apply'
@@ -255,6 +291,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface StudentRouteChildren {
+  StudentUsernameRoute: typeof StudentUsernameRoute
+  StudentIndexRoute: typeof StudentIndexRoute
+}
+
+const StudentRouteChildren: StudentRouteChildren = {
+  StudentUsernameRoute: StudentUsernameRoute,
+  StudentIndexRoute: StudentIndexRoute,
+}
+
+const StudentRouteWithChildren =
+  StudentRoute._addFileChildren(StudentRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -264,7 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RecruiterRoute: RecruiterRoute,
   SignupRoute: SignupRoute,
-  StudentRoute: StudentRoute,
+  StudentRoute: StudentRouteWithChildren,
   SignupPhotoRoute: SignupPhotoRoute,
   JobsJobIdApplyRoute: JobsJobIdApplyRoute,
 }

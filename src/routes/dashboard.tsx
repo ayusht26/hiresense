@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import {
-  LogOut,
   Building,
   UserCheck,
   Briefcase,
@@ -12,6 +11,7 @@ import {
   ArrowRight,
   Inbox,
   Filter,
+  User,
 } from "lucide-react";
 import { supabase, fetchUserProfile } from "@/lib/supabase";
 import type { Profile, Job } from "@/types/database.types";
@@ -19,6 +19,7 @@ import { JobCard } from "@/components/JobCard";
 import { JobDetailPanel } from "@/components/JobDetailPanel";
 import { AddJobModal } from "@/components/AddJobModal";
 import { EditJobModal } from "@/components/EditJobModal";
+import ProfileDropdown from "@/components/kokonutui/profile-dropdown";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -213,16 +214,6 @@ function DashboardPage() {
     return filteredJobs.find((j) => j.id === selectedJobId) || filteredJobs[0] || null;
   }, [selectedJobId, filteredJobs]);
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-  };
-
   if (loading || !profile) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
@@ -242,51 +233,27 @@ function DashboardPage() {
       {/* Background Dot Grid */}
       <div aria-hidden className="dot-grid fixed inset-0 pointer-events-none opacity-40 z-0" />
 
-      {/* Top Floating Pill Navigation */}
-      <header className="sticky top-0 pt-6 pb-4 px-4 flex justify-center w-full z-40 bg-[#0a0a0a]/80 backdrop-blur-md">
-        <nav
-          aria-label="Dashboard navigation"
-          className="flex h-12 w-full max-w-[1240px] items-center justify-between rounded-full bg-[#141414] px-6 border border-[rgba(255,255,255,0.10)]"
-        >
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="text-[16px] font-[650] tracking-tight text-[#f5f5f5] transition-opacity hover:opacity-80"
-            >
-              HireSense
-            </Link>
-            <span className="inline-block text-[11px] font-[600] px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-[#8a8a8a] border border-[rgba(255,255,255,0.06)]">
-              {isRecruiter ? "Recruiter" : "Student"}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1a1a] border border-[rgba(255,255,255,0.12)] text-[11px] font-[600] text-[#f5f5f5]">
-                {getInitials(profile.full_name)}
-              </div>
-              <span className="hidden sm:inline text-[13px] font-[600] text-[#f5f5f5]">
-                {profile.full_name}
+      {/* Main Workspace */}
+      <main className="relative z-10 flex-1 max-w-[1240px] w-full mx-auto px-4 pt-6 sm:pt-8 pb-10 space-y-6">
+        {/* Workspace Top Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-[rgba(255,255,255,0.08)] pb-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2.5">
+              <Link
+                to="/"
+                className="flex items-center gap-2 group transition-opacity hover:opacity-85"
+              >
+                <div className="flex h-7 w-7 items-center justify-center rounded-[30%] bg-[#f5f5f5] text-[13px] font-[700] text-[#0a0a0a] transition-transform group-hover:scale-105">
+                  H
+                </div>
+                <span className="text-[15px] font-[650] tracking-tight text-[#f5f5f5]">
+                  HireSense
+                </span>
+              </Link>
+              <span className="inline-block text-[11px] font-[600] px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-[#8a8a8a] border border-[rgba(255,255,255,0.06)]">
+                {isRecruiter ? "Recruiter" : "Student"}
               </span>
             </div>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 text-[13px] font-[600] text-[#8a8a8a] transition-colors hover:text-[#f5f5f5]"
-            >
-              <LogOut size={14} />
-              <span className="hidden sm:inline">Log out</span>
-            </button>
-          </div>
-        </nav>
-      </header>
-
-      {/* Main Workspace */}
-      <main className="relative z-10 flex-1 max-w-[1240px] w-full mx-auto px-4 py-6 space-y-6">
-        {/* Workspace Top Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[rgba(255,255,255,0.08)] pb-6">
-          <div>
             <h1 className="text-[28px] sm:text-[34px] font-[650] tracking-tight text-[#f5f5f5] leading-tight">
               {isRecruiter ? "Recruiter Workspace." : "Jobs for you."}
             </h1>
@@ -297,17 +264,55 @@ function DashboardPage() {
             </p>
           </div>
 
-          {/* Primary Action Button */}
-          {isRecruiter && (
-            <button
-              type="button"
-              onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#f5f5f5] px-6 text-[14px] font-[600] text-[#0a0a0a] transition-all hover:bg-[#e0e0e0] active:scale-[0.98] shrink-0"
-            >
-              <Plus size={16} />
-              <span>Add listing</span>
-            </button>
-          )}
+          {/* Right Controls: Add listing (Recruiter) + KokonutUI Profile Dropdown */}
+          <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+            {isRecruiter && (
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(true)}
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-[#f5f5f5] px-6 text-[14px] font-[600] text-[#0a0a0a] transition-all hover:bg-[#e0e0e0] active:scale-[0.98] shrink-0"
+              >
+                <Plus size={16} />
+                <span>Add listing</span>
+              </button>
+            )}
+
+            <ProfileDropdown
+              accounts={[
+                {
+                  id: profile.id,
+                  name: profile.full_name,
+                  email: profile.email,
+                  avatar_url: profile.avatar_url,
+                  plan: isRecruiter ? "Recruiter" : "Student",
+                },
+              ]}
+              defaultAccountId={profile.id}
+              items={
+                isStudent
+                  ? [
+                      {
+                        label: "Profile",
+                        icon: <User className="size-4" />,
+                        href: `/student/${profile.username}`,
+                      },
+                      {
+                        label: "Dashboard",
+                        icon: <Briefcase className="size-4" />,
+                        href: "/dashboard",
+                      },
+                    ]
+                  : [
+                      {
+                        label: "Dashboard",
+                        icon: <Briefcase className="size-4" />,
+                        href: "/dashboard",
+                      },
+                    ]
+              }
+              onSignOut={handleLogout}
+            />
+          </div>
         </div>
 
         {/* Filter & Search Bar */}

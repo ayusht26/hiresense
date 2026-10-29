@@ -24,4 +24,17 @@ describe("App routing", () => {
     const signupMatches = router.matchRoutes("/signup");
     expect(signupMatches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+
+  it("matches /dashboard, /student, and /student/$username routes", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    const dashboardMatches = router.matchRoutes("/dashboard");
+    expect(dashboardMatches.at(-1)?.routeId).not.toBe(rootRouteId);
+
+    const studentMatches = router.matchRoutes("/student");
+    expect(studentMatches.at(-1)?.routeId).not.toBe(rootRouteId);
+
+    const studentProfileMatches = router.matchRoutes("/student/varnit");
+    expect(studentProfileMatches.at(-1)?.routeId).not.toBe(rootRouteId);
+  });
 });

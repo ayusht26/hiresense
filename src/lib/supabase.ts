@@ -81,3 +81,23 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
 
   return data as Profile;
 }
+
+/**
+ * Fetch a profile by username case-insensitively.
+ */
+export async function fetchProfileByUsername(username: string): Promise<Profile | null> {
+  const trimmed = username.trim().toLowerCase();
+  if (!trimmed) return null;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .ilike("username", trimmed)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as Profile;
+}

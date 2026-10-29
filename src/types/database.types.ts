@@ -139,38 +139,47 @@ export type Database = {
       };
       profiles: {
         Row: {
+          age: number | null;
           avatar_step_done: boolean;
           avatar_url: string | null;
           company_name: string | null;
           created_at: string;
+          degree: string | null;
           email: string;
           full_name: string;
           id: string;
           role: Database["public"]["Enums"]["user_role"];
+          university: string | null;
           updated_at: string;
           username: string;
         };
         Insert: {
+          age?: number | null;
           avatar_step_done?: boolean;
           avatar_url?: string | null;
           company_name?: string | null;
           created_at?: string;
+          degree?: string | null;
           email: string;
           full_name: string;
           id: string;
           role?: Database["public"]["Enums"]["user_role"];
+          university?: string | null;
           updated_at?: string;
           username: string;
         };
         Update: {
+          age?: number | null;
           avatar_step_done?: boolean;
           avatar_url?: string | null;
           company_name?: string | null;
           created_at?: string;
+          degree?: string | null;
           email?: string;
           full_name?: string;
           id?: string;
           role?: Database["public"]["Enums"]["user_role"];
+          university?: string | null;
           updated_at?: string;
           username?: string;
         };
