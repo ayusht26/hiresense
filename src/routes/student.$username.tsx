@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   GraduationCap,
@@ -9,17 +9,25 @@ import {
   Link2,
   Pencil,
   Check,
-  Camera,
   User,
   Briefcase,
   AlertCircle,
   Copy,
   CheckCheck,
-  Building,
+  Building2,
+  ExternalLink,
+  School,
 } from "lucide-react";
 import { supabase, fetchUserProfile, fetchProfileByUsername } from "@/lib/supabase";
 import type { Profile } from "@/types/database.types";
 import ProfileDropdown from "@/components/kokonutui/profile-dropdown";
+import { FileUpload } from "@/components/ui/file-upload";
+import { UniversityLogo } from "@/components/UniversityLogo";
+import { CompanyLogo } from "@/components/CompanyLogo";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
+import { searchUniversities } from "@/data/universities";
+import { searchCompanies } from "@/data/companies";
+import { GitHubIcon, LinkedInIcon, TwitterIcon, LeetCodeIcon } from "@/components/SocialIcons";
 
 export const Route = createFileRoute("/student/$username")({
   head: ({ params }) => ({
@@ -34,6 +42,21 @@ export const Route = createFileRoute("/student/$username")({
   component: StudentProfilePage,
 });
 
+function normalizeSocialUrl(value: string, baseUrl: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  const clean = trimmed.replace(/^@/, "");
+  return `${baseUrl}${clean}`;
+}
+
+function cleanDisplayUrl(url: string | null): string {
+  if (!url) return "";
+  return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+}
+
 function StudentProfilePage() {
   const { username } = Route.useParams();
   const navigate = useNavigate();
@@ -47,15 +70,20 @@ function StudentProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formFullName, setFormFullName] = useState("");
   const [formAge, setFormAge] = useState("");
+  const [formCollege, setFormCollege] = useState("");
   const [formUniversity, setFormUniversity] = useState("");
   const [formDegree, setFormDegree] = useState("");
+  const [formIsHired, setFormIsHired] = useState(false);
+  const [formHiredCompany, setFormHiredCompany] = useState("");
+  const [formTwitter, setFormTwitter] = useState("");
+  const [formGithub, setFormGithub] = useState("");
+  const [formLinkedin, setFormLinkedin] = useState("");
+  const [formLeetcode, setFormLeetcode] = useState("");
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -87,11 +115,7 @@ function StudentProfilePage() {
 
         if (isMounted) {
           setTargetProfile(studentProfile);
-          setFormFullName(studentProfile.full_name);
-          setFormAge(studentProfile.age !== null ? String(studentProfile.age) : "");
-          setFormUniversity(studentProfile.university || "");
-          setFormDegree(studentProfile.degree || "");
-          setPreviewUrl(studentProfile.avatar_url);
+          syncFormState(studentProfile);
         }
       } catch (err) {
         console.error("Error loading student profile:", err);
@@ -108,6 +132,22 @@ function StudentProfilePage() {
     };
   }, [username]);
 
+  const syncFormState = (p: Profile) => {
+    setFormFullName(p.full_name || "");
+    setFormAge(p.age !== null ? String(p.age) : "");
+    setFormCollege(p.college || "");
+    setFormUniversity(p.university || "");
+    setFormDegree(p.degree || "");
+    setFormIsHired(Boolean(p.is_hired));
+    setFormHiredCompany(p.hired_company || "");
+    setFormTwitter(p.twitter_url || "");
+    setFormGithub(p.github_url || "");
+    setFormLinkedin(p.linkedin_url || "");
+    setFormLeetcode(p.leetcode_url || "");
+    setSelectedFile(null);
+    setFormError(null);
+  };
+
   const isOwner = Boolean(
     currentUser && targetProfile && currentUser.id === targetProfile.id
   );
@@ -117,44 +157,15 @@ function StudentProfilePage() {
     navigate({ to: "/login" });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setFormError("Please choose an image file (PNG, JPG, or WEBP).");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setFormError("Image file size must be less than 5MB.");
-      return;
-    }
-
-    setFormError(null);
-    setSelectedFile(file);
-
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
-  };
-
   const handleStartEditing = () => {
     if (!targetProfile) return;
-    setFormFullName(targetProfile.full_name);
-    setFormAge(targetProfile.age !== null ? String(targetProfile.age) : "");
-    setFormUniversity(targetProfile.university || "");
-    setFormDegree(targetProfile.degree || "");
-    setPreviewUrl(targetProfile.avatar_url);
-    setSelectedFile(null);
-    setFormError(null);
+    syncFormState(targetProfile);
     setIsEditing(true);
   };
 
   const handleCancelEditing = () => {
     if (!targetProfile) return;
-    setPreviewUrl(targetProfile.avatar_url);
-    setSelectedFile(null);
-    setFormError(null);
+    syncFormState(targetProfile);
     setIsEditing(false);
   };
 
@@ -178,13 +189,18 @@ function StudentProfilePage() {
       parsedAge = num;
     }
 
+    if (formIsHired && !formHiredCompany.trim()) {
+      setFormError("Please enter the company name where you were hired.");
+      return;
+    }
+
     setIsSaving(true);
     setFormError(null);
 
     try {
       let finalAvatarUrl = targetProfile.avatar_url;
 
-      // Upload new avatar if a file was selected
+      // Upload new avatar if a file was selected via FileUpload
       if (selectedFile) {
         const ext = selectedFile.name.split(".").pop() || "jpg";
         const cleanExt = ext.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -212,14 +228,27 @@ function StudentProfilePage() {
         finalAvatarUrl = publicUrl;
       }
 
+      // Normalise social links
+      const finalTwitter = normalizeSocialUrl(formTwitter, "https://x.com/");
+      const finalGithub = normalizeSocialUrl(formGithub, "https://github.com/");
+      const finalLinkedin = normalizeSocialUrl(formLinkedin, "https://linkedin.com/in/");
+      const finalLeetcode = normalizeSocialUrl(formLeetcode, "https://leetcode.com/u/");
+
       // Update database profile
       const { data, error: updateError } = await supabase
         .from("profiles")
         .update({
           full_name: trimmedName,
           age: parsedAge,
+          college: formCollege.trim() || null,
           university: formUniversity.trim() || null,
           degree: formDegree.trim() || null,
+          is_hired: formIsHired,
+          hired_company: formIsHired ? formHiredCompany.trim() : null,
+          twitter_url: finalTwitter,
+          github_url: finalGithub,
+          linkedin_url: finalLinkedin,
+          leetcode_url: finalLeetcode,
           avatar_url: finalAvatarUrl,
           avatar_step_done: true,
         })
@@ -301,13 +330,20 @@ function StudentProfilePage() {
     );
   }
 
+  const hasSocials = Boolean(
+    targetProfile.github_url ||
+    targetProfile.linkedin_url ||
+    targetProfile.twitter_url ||
+    targetProfile.leetcode_url
+  );
+
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] text-[#f5f5f5] flex flex-col justify-between selection:bg-[#f5f5f5] selection:text-[#0a0a0a]">
       {/* Background Dot Grid */}
       <div aria-hidden className="dot-grid fixed inset-0 pointer-events-none opacity-40 z-0" />
 
       {/* Main Container */}
-      <main className="relative z-10 flex-1 max-w-[840px] w-full mx-auto px-4 pt-6 sm:pt-8 pb-16 space-y-6">
+      <main className="relative z-10 flex-1 max-w-[880px] w-full mx-auto px-4 pt-6 sm:pt-8 pb-16 space-y-6">
         {/* Top Minimal Bar */}
         <div className="flex items-center justify-between gap-4 border-b border-[rgba(255,255,255,0.08)] pb-5">
           <Link
@@ -381,15 +417,29 @@ function StudentProfilePage() {
                     <h1 className="text-[26px] sm:text-[32px] font-[650] tracking-tight text-[#f5f5f5] leading-tight">
                       {targetProfile.full_name}.
                     </h1>
-                    <span className="inline-block text-[11px] font-[600] px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-[#8a8a8a] border border-[rgba(255,255,255,0.08)]">
-                      Student
-                    </span>
+
+                    {/* Hired Status Badge */}
+                    {targetProfile.is_hired && targetProfile.hired_company ? (
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 text-[12px] font-[600]">
+                        <CompanyLogo name={targetProfile.hired_company} size="xs" />
+                        <span>Hired at {targetProfile.hired_company}</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[rgba(0,102,255,0.10)] text-[#0066ff] border border-[rgba(0,102,255,0.20)] text-[11px] font-[600]">
+                        <span className="size-1.5 rounded-full bg-[#0066ff]" />
+                        <span>Open to roles</span>
+                      </span>
+                    )}
                   </div>
+
                   <p className="text-[14px] font-[600] text-[#8a8a8a]">
                     @{targetProfile.username}
                   </p>
+
                   <p className="text-[13px] font-[450] text-[#707070]">
-                    Verified candidate profile on HireSense
+                    {targetProfile.is_hired && targetProfile.hired_company
+                      ? `Placed candidate · Currently at ${targetProfile.hired_company}`
+                      : "Verified candidate profile on HireSense"}
                   </p>
                 </div>
               </div>
@@ -428,7 +478,7 @@ function StudentProfilePage() {
                     Edit profile.
                   </h2>
                   <p className="text-[13px] text-[#8a8a8a]">
-                    Update your candidate identity, academic details, and avatar.
+                    Update your candidate identity, education, employment status, and developer links.
                   </p>
                 </div>
               </div>
@@ -440,123 +490,244 @@ function StudentProfilePage() {
                 </div>
               )}
 
-              {/* Photo Upload Section */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-                <div className="relative group">
-                  <div className="h-24 w-24 rounded-full overflow-hidden bg-[#1a1a1a] border-2 border-[rgba(255,255,255,0.18)] flex items-center justify-center text-[#f5f5f5]">
-                    {previewUrl ? (
-                      <img
-                        src={previewUrl}
-                        alt="Avatar preview"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-[26px] font-[650] text-[#f5f5f5]">
-                        {getInitials(formFullName || "U")}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute inset-0 rounded-full bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[#f5f5f5]"
-                  >
-                    <Camera size={18} />
-                    <span className="text-[10px] font-[600] mt-1">Change</span>
-                  </button>
-                </div>
+              {/* Exact Same Profile Image Picker as used in Signup */}
+              <div className="space-y-2">
+                <label className="block text-[12px] font-[600] text-[#8a8a8a]">
+                  Profile photo
+                </label>
+                <FileUpload
+                  value={selectedFile}
+                  onFileSelect={setSelectedFile}
+                  acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
+                  maxFileSize={5 * 1024 * 1024}
+                  circularPreview={true}
+                  disabled={isSaving}
+                  error={formError || undefined}
+                />
+              </div>
 
-                <div className="space-y-1.5">
-                  <p className="text-[14px] font-[600] text-[#f5f5f5]">Profile picture</p>
-                  <p className="text-[12px] text-[#8a8a8a]">
-                    PNG, JPG, or WEBP up to 5MB. Clear, well-lit photo recommended.
-                  </p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#1a1a1a] px-3.5 text-[12px] font-[600] text-[#f5f5f5] border border-[rgba(255,255,255,0.10)] hover:bg-[#222]"
-                  >
-                    <Camera size={13} />
-                    <span>Upload new image</span>
-                  </button>
+              {/* Basic Information */}
+              <div className="space-y-4 pt-2">
+                <h3 className="text-[14px] font-[650] text-[#f5f5f5] uppercase tracking-wider text-[11px] text-[#707070]">
+                  Basic Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Full Name */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="formFullName" className="block text-[12px] font-[600] text-[#8a8a8a]">
+                      Full name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      id="formFullName"
+                      type="text"
+                      required
+                      value={formFullName}
+                      onChange={(e) => setFormFullName(e.target.value)}
+                      placeholder="e.g. Varnit Agustya"
+                      className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
+                    />
+                  </div>
+
+                  {/* Age */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="formAge" className="block text-[12px] font-[600] text-[#8a8a8a]">
+                      Age
+                    </label>
+                    <input
+                      id="formAge"
+                      type="number"
+                      min="14"
+                      max="120"
+                      value={formAge}
+                      onChange={(e) => setFormAge(e.target.value)}
+                      placeholder="e.g. 21"
+                      className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Editable Fields Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Full Name */}
-                <div className="space-y-1.5">
-                  <label htmlFor="formFullName" className="block text-[12px] font-[600] text-[#8a8a8a]">
-                    Full name <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    id="formFullName"
-                    type="text"
-                    required
-                    value={formFullName}
-                    onChange={(e) => setFormFullName(e.target.value)}
-                    placeholder="e.g. Varnit Agustya"
-                    className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
-                  />
-                </div>
+              {/* Education (College & University) */}
+              <div className="space-y-4 pt-2">
+                <h3 className="text-[14px] font-[650] text-[#f5f5f5] uppercase tracking-wider text-[11px] text-[#707070]">
+                  Education & Institution
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* University */}
+                  <div className="space-y-1.5 sm:col-span-1">
+                    <label htmlFor="formUniversity" className="block text-[12px] font-[600] text-[#8a8a8a]">
+                      University
+                    </label>
+                    <AutocompleteInput
+                      id="formUniversity"
+                      value={formUniversity}
+                      onChange={(val) => setFormUniversity(val)}
+                      onSelect={(item) => setFormUniversity(item.name)}
+                      suggestions={searchUniversities(formUniversity, 8).map((u) => ({
+                        id: u.id,
+                        name: u.name,
+                        subtitle: u.state || u.country,
+                        logo: u.logo,
+                        domain: u.domain,
+                      }))}
+                      placeholder="e.g. Bennett University, IIT Bombay"
+                    />
+                  </div>
 
-                {/* Age */}
-                <div className="space-y-1.5">
-                  <label htmlFor="formAge" className="block text-[12px] font-[600] text-[#8a8a8a]">
-                    Age
-                  </label>
-                  <input
-                    id="formAge"
-                    type="number"
-                    min="14"
-                    max="120"
-                    value={formAge}
-                    onChange={(e) => setFormAge(e.target.value)}
-                    placeholder="e.g. 21"
-                    className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
-                  />
-                </div>
+                  {/* College */}
+                  <div className="space-y-1.5 sm:col-span-1">
+                    <label htmlFor="formCollege" className="block text-[12px] font-[600] text-[#8a8a8a]">
+                      College / Campus
+                    </label>
+                    <input
+                      id="formCollege"
+                      type="text"
+                      value={formCollege}
+                      onChange={(e) => setFormCollege(e.target.value)}
+                      placeholder="e.g. School of Engineering"
+                      className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
+                    />
+                  </div>
 
-                {/* University */}
-                <div className="space-y-1.5">
-                  <label htmlFor="formUniversity" className="block text-[12px] font-[600] text-[#8a8a8a]">
-                    University / Institution
-                  </label>
-                  <input
-                    id="formUniversity"
-                    type="text"
-                    value={formUniversity}
-                    onChange={(e) => setFormUniversity(e.target.value)}
-                    placeholder="e.g. Indian Institute of Technology"
-                    className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
-                  />
+                  {/* Degree */}
+                  <div className="space-y-1.5 sm:col-span-1">
+                    <label htmlFor="formDegree" className="block text-[12px] font-[600] text-[#8a8a8a]">
+                      Degree / Major
+                    </label>
+                    <input
+                      id="formDegree"
+                      type="text"
+                      value={formDegree}
+                      onChange={(e) => setFormDegree(e.target.value)}
+                      placeholder="e.g. B.Tech Computer Science"
+                      className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
+                    />
+                  </div>
                 </div>
+              </div>
 
-                {/* Degree */}
-                <div className="space-y-1.5">
-                  <label htmlFor="formDegree" className="block text-[12px] font-[600] text-[#8a8a8a]">
-                    Degree / Major
+              {/* Employment Status (If hired, display company) */}
+              <div className="space-y-4 pt-2">
+                <h3 className="text-[14px] font-[650] text-[#f5f5f5] uppercase tracking-wider text-[11px] text-[#707070]">
+                  Employment Status
+                </h3>
+                <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 space-y-4">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      id="formIsHired"
+                      type="checkbox"
+                      checked={formIsHired}
+                      onChange={(e) => setFormIsHired(e.target.checked)}
+                      className="h-4 w-4 rounded accent-[#f5f5f5] bg-[#141414] border border-[rgba(255,255,255,0.20)]"
+                    />
+                    <div>
+                      <span className="text-[14px] font-[600] text-[#f5f5f5]">
+                        I have been hired / currently employed
+                      </span>
+                      <p className="text-[12px] text-[#8a8a8a]">
+                        Display the company where you are working on your public profile.
+                      </p>
+                    </div>
                   </label>
-                  <input
-                    id="formDegree"
-                    type="text"
-                    value={formDegree}
-                    onChange={(e) => setFormDegree(e.target.value)}
-                    placeholder="e.g. B.Tech Computer Science & Engineering"
-                    className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
-                  />
+
+                  {formIsHired && (
+                    <div className="space-y-1.5 pt-2 border-t border-[rgba(255,255,255,0.06)]">
+                      <label htmlFor="formHiredCompany" className="block text-[12px] font-[600] text-[#8a8a8a]">
+                        Company name <span className="text-red-400">*</span>
+                      </label>
+                      <AutocompleteInput
+                        id="formHiredCompany"
+                        value={formHiredCompany}
+                        onChange={(val) => setFormHiredCompany(val)}
+                        onSelect={(item) => setFormHiredCompany(item.name)}
+                        suggestions={searchCompanies(formHiredCompany, 8).map((c) => ({
+                          id: c.id,
+                          name: c.name,
+                          subtitle: `${c.domain}${c.category ? ` · ${c.category}` : ""}`,
+                          logo: c.logo,
+                          domain: c.domain,
+                        }))}
+                        placeholder="e.g. Google, Microsoft, Zomato, Swiggy, TCS"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Developer & Social Profiles (Twitter, GitHub, LinkedIn, LeetCode) */}
+              <div className="space-y-4 pt-2">
+                <h3 className="text-[14px] font-[650] text-[#f5f5f5] uppercase tracking-wider text-[11px] text-[#707070]">
+                  Social & Developer Links
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* GitHub */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="formGithub" className="flex items-center gap-2 text-[12px] font-[600] text-[#8a8a8a]">
+                      <GitHubIcon className="size-3.5 text-[#f5f5f5]" />
+                      <span>GitHub (username or URL)</span>
+                    </label>
+                    <input
+                      id="formGithub"
+                      type="text"
+                      value={formGithub}
+                      onChange={(e) => setFormGithub(e.target.value)}
+                      placeholder="e.g. github.com/username or @username"
+                      className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
+                    />
+                  </div>
+
+                  {/* LinkedIn */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="formLinkedin" className="flex items-center gap-2 text-[12px] font-[600] text-[#8a8a8a]">
+                      <LinkedInIcon className="size-3.5 text-[#0077b5]" />
+                      <span>LinkedIn (profile URL or handle)</span>
+                    </label>
+                    <input
+                      id="formLinkedin"
+                      type="text"
+                      value={formLinkedin}
+                      onChange={(e) => setFormLinkedin(e.target.value)}
+                      placeholder="e.g. linkedin.com/in/username"
+                      className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
+                    />
+                  </div>
+
+                  {/* Twitter / X */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="formTwitter" className="flex items-center gap-2 text-[12px] font-[600] text-[#8a8a8a]">
+                      <TwitterIcon className="size-3.5 text-[#f5f5f5]" />
+                      <span>Twitter / X (handle or URL)</span>
+                    </label>
+                    <input
+                      id="formTwitter"
+                      type="text"
+                      value={formTwitter}
+                      onChange={(e) => setFormTwitter(e.target.value)}
+                      placeholder="e.g. @username or x.com/username"
+                      className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
+                    />
+                  </div>
+
+                  {/* LeetCode */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="formLeetcode" className="flex items-center gap-2 text-[12px] font-[600] text-[#8a8a8a]">
+                      <LeetCodeIcon className="size-3.5 text-[#ffa116]" />
+                      <span>LeetCode (handle or URL)</span>
+                    </label>
+                    <input
+                      id="formLeetcode"
+                      type="text"
+                      value={formLeetcode}
+                      onChange={(e) => setFormLeetcode(e.target.value)}
+                      placeholder="e.g. leetcode.com/u/username or @username"
+                      className="w-full h-11 px-4 rounded-[16px] bg-[#1a1a1a] border-0 text-[14px] text-[#f5f5f5] placeholder-[#5c5c5c] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Form Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[rgba(255,255,255,0.08)]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(255,255,255,0.08)]">
                 <button
                   type="button"
                   onClick={handleCancelEditing}
@@ -574,7 +745,7 @@ function StudentProfilePage() {
                   {isSaving ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-[rgba(0,0,0,0.2)] border-t-[#0a0a0a]" />
-                      <span>Saving...</span>
+                      <span>Saving changes...</span>
                     </>
                   ) : (
                     <>
@@ -588,109 +759,257 @@ function StudentProfilePage() {
           )}
         </div>
 
-        {/* Academic Credentials Card */}
-        <div className="rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.10)] p-6 sm:p-8 space-y-6">
-          <div className="border-b border-[rgba(255,255,255,0.08)] pb-4">
-            <h2 className="text-[20px] font-[650] text-[#f5f5f5] tracking-tight">
-              Academic credentials.
-            </h2>
-            <p className="mt-0.5 text-[13px] text-[#8a8a8a]">
-              Verified education record used in role requirement matching rubrics.
-            </p>
-          </div>
+        {/* Socials & Developer Links (View Mode) */}
+        {!isEditing && (
+          <div className="rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.10)] p-6 sm:p-8 space-y-4">
+            <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-3">
+              <h2 className="text-[18px] font-[650] text-[#f5f5f5] tracking-tight">
+                Social & Developer profiles.
+              </h2>
+              {isOwner && !hasSocials && (
+                <button
+                  type="button"
+                  onClick={handleStartEditing}
+                  className="text-[12px] font-[600] text-[#8a8a8a] hover:text-[#f5f5f5] transition-colors"
+                >
+                  + Add links
+                </button>
+              )}
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* University */}
-            <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 flex items-start gap-3.5">
-              <div className="h-10 w-10 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#8a8a8a] shrink-0">
-                <GraduationCap size={18} />
+            {hasSocials ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {targetProfile.github_url && (
+                  <a
+                    href={targetProfile.github_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.18)] transition-all group"
+                  >
+                    <div className="h-9 w-9 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#f5f5f5] shrink-0 group-hover:scale-105 transition-transform">
+                      <GitHubIcon className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-[600] text-[#8a8a8a] uppercase tracking-wider">GitHub</p>
+                      <p className="text-[13px] font-[600] text-[#f5f5f5] truncate">
+                        {cleanDisplayUrl(targetProfile.github_url).replace("github.com/", "")}
+                      </p>
+                    </div>
+                    <ExternalLink size={13} className="text-[#5c5c5c] group-hover:text-[#f5f5f5] shrink-0" />
+                  </a>
+                )}
+
+                {targetProfile.linkedin_url && (
+                  <a
+                    href={targetProfile.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.18)] transition-all group"
+                  >
+                    <div className="h-9 w-9 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#0077b5] shrink-0 group-hover:scale-105 transition-transform">
+                      <LinkedInIcon className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-[600] text-[#8a8a8a] uppercase tracking-wider">LinkedIn</p>
+                      <p className="text-[13px] font-[600] text-[#f5f5f5] truncate">
+                        {cleanDisplayUrl(targetProfile.linkedin_url).replace("linkedin.com/in/", "")}
+                      </p>
+                    </div>
+                    <ExternalLink size={13} className="text-[#5c5c5c] group-hover:text-[#f5f5f5] shrink-0" />
+                  </a>
+                )}
+
+                {targetProfile.twitter_url && (
+                  <a
+                    href={targetProfile.twitter_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.18)] transition-all group"
+                  >
+                    <div className="h-9 w-9 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#f5f5f5] shrink-0 group-hover:scale-105 transition-transform">
+                      <TwitterIcon className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-[600] text-[#8a8a8a] uppercase tracking-wider">X / Twitter</p>
+                      <p className="text-[13px] font-[600] text-[#f5f5f5] truncate">
+                        @{cleanDisplayUrl(targetProfile.twitter_url).replace("x.com/", "").replace("twitter.com/", "")}
+                      </p>
+                    </div>
+                    <ExternalLink size={13} className="text-[#5c5c5c] group-hover:text-[#f5f5f5] shrink-0" />
+                  </a>
+                )}
+
+                {targetProfile.leetcode_url && (
+                  <a
+                    href={targetProfile.leetcode_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.18)] transition-all group"
+                  >
+                    <div className="h-9 w-9 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#ffa116] shrink-0 group-hover:scale-105 transition-transform">
+                      <LeetCodeIcon className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-[600] text-[#8a8a8a] uppercase tracking-wider">LeetCode</p>
+                      <p className="text-[13px] font-[600] text-[#f5f5f5] truncate">
+                        {cleanDisplayUrl(targetProfile.leetcode_url).replace("leetcode.com/u/", "").replace("leetcode.com/", "")}
+                      </p>
+                    </div>
+                    <ExternalLink size={13} className="text-[#5c5c5c] group-hover:text-[#f5f5f5] shrink-0" />
+                  </a>
+                )}
               </div>
-              <div className="space-y-0.5 min-w-0">
-                <p className="text-[12px] font-[600] text-[#8a8a8a]">University / Institution</p>
-                <p className="text-[14px] font-[600] text-[#f5f5f5] truncate">
-                  {targetProfile.university || "Not provided"}
+            ) : (
+              <p className="text-[13px] font-[450] text-[#707070] italic">
+                No social or developer profiles linked yet.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Academic Credentials Card (LinkedIn style with University Logo) */}
+        {!isEditing && (
+          <div className="rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.10)] p-6 sm:p-8 space-y-6">
+            <div className="border-b border-[rgba(255,255,255,0.08)] pb-4">
+              <h2 className="text-[20px] font-[650] text-[#f5f5f5] tracking-tight">
+                Academic credentials.
+              </h2>
+              <p className="mt-0.5 text-[13px] text-[#8a8a8a]">
+                Verified education records used in role requirement matching rubrics.
+              </p>
+            </div>
+
+            {targetProfile.university || targetProfile.college || targetProfile.degree ? (
+              <div className="rounded-[20px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] p-5 sm:p-6 flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
+                {/* LinkedIn-style University Logo */}
+                <UniversityLogo
+                  name={targetProfile.university || targetProfile.college || "University"}
+                  size="lg"
+                  className="rounded-[12px]"
+                />
+
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <h3 className="text-[18px] sm:text-[20px] font-[650] text-[#f5f5f5] tracking-tight leading-snug">
+                    {targetProfile.university || "University"}
+                  </h3>
+
+                  {targetProfile.degree && (
+                    <p className="text-[15px] font-[500] text-[#f5f5f5]">
+                      {targetProfile.degree}
+                    </p>
+                  )}
+
+                  {targetProfile.college && (
+                    <p className="text-[13px] font-[450] text-[#8a8a8a] flex items-center gap-1.5">
+                      <School size={14} className="text-[#707070]" />
+                      <span>{targetProfile.college}</span>
+                    </p>
+                  )}
+
+                  <p className="text-[12px] font-[450] text-[#707070] pt-1">
+                    Verified student candidate on HireSense
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-[16px] bg-[#1a1a1a] p-6 text-center text-[#707070] text-[14px]">
+                No university or degree records added yet.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Hired Company / Career Status Card */}
+        {!isEditing && targetProfile.is_hired && targetProfile.hired_company && (
+          <div className="rounded-[24px] bg-[#141414] border border-emerald-500/20 p-6 sm:p-8 space-y-4">
+            <div className="border-b border-[rgba(255,255,255,0.08)] pb-3 flex items-center justify-between">
+              <h2 className="text-[18px] font-[650] text-[#f5f5f5] tracking-tight">
+                Current Employment.
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-[600]">
+                Active Placement
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)]">
+              <CompanyLogo name={targetProfile.hired_company} size="lg" />
+              <div>
+                <p className="text-[17px] font-[650] text-[#f5f5f5] tracking-tight">
+                  {targetProfile.hired_company}
+                </p>
+                <p className="text-[13px] text-[#8a8a8a]">
+                  Candidate hired and placed through verified role matching.
                 </p>
               </div>
             </div>
-
-            {/* Degree */}
-            <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 flex items-start gap-3.5">
-              <div className="h-10 w-10 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#8a8a8a] shrink-0">
-                <BookOpen size={18} />
-              </div>
-              <div className="space-y-0.5 min-w-0">
-                <p className="text-[12px] font-[600] text-[#8a8a8a]">Degree / Major</p>
-                <p className="text-[14px] font-[600] text-[#f5f5f5] truncate">
-                  {targetProfile.degree || "Not provided"}
-                </p>
-              </div>
-            </div>
           </div>
-        </div>
+        )}
 
         {/* Personal & Account Details Card */}
-        <div className="rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.10)] p-6 sm:p-8 space-y-6">
-          <div className="border-b border-[rgba(255,255,255,0.08)] pb-4">
-            <h2 className="text-[20px] font-[650] text-[#f5f5f5] tracking-tight">
-              Personal details.
-            </h2>
-            <p className="mt-0.5 text-[13px] text-[#8a8a8a]">
-              Observable candidate attributes and contact channels.
-            </p>
-          </div>
+        {!isEditing && (
+          <div className="rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.10)] p-6 sm:p-8 space-y-6">
+            <div className="border-b border-[rgba(255,255,255,0.08)] pb-4">
+              <h2 className="text-[20px] font-[650] text-[#f5f5f5] tracking-tight">
+                Personal details.
+              </h2>
+              <p className="mt-0.5 text-[13px] text-[#8a8a8a]">
+                Observable candidate attributes and contact channels.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Age */}
-            <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 flex items-start gap-3.5">
-              <div className="h-10 w-10 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#8a8a8a] shrink-0">
-                <Calendar size={18} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Age */}
+              <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 flex items-start gap-3.5">
+                <div className="h-10 w-10 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#8a8a8a] shrink-0">
+                  <Calendar size={18} />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <p className="text-[12px] font-[600] text-[#8a8a8a]">Age</p>
+                  <p className="text-[14px] font-[600] text-[#f5f5f5]">
+                    {targetProfile.age !== null ? `${targetProfile.age} years old` : "Not provided"}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-0.5 min-w-0">
-                <p className="text-[12px] font-[600] text-[#8a8a8a]">Age</p>
-                <p className="text-[14px] font-[600] text-[#f5f5f5]">
-                  {targetProfile.age !== null ? `${targetProfile.age} years old` : "Not provided"}
-                </p>
+
+              {/* Email Address */}
+              <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 flex items-start gap-3.5">
+                <div className="h-10 w-10 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#8a8a8a] shrink-0">
+                  <Mail size={18} />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <p className="text-[12px] font-[600] text-[#8a8a8a]">Contact email</p>
+                  <p className="text-[14px] font-[600] text-[#f5f5f5] truncate">
+                    {targetProfile.email}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Email Address */}
-            <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 flex items-start gap-3.5">
-              <div className="h-10 w-10 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#8a8a8a] shrink-0">
-                <Mail size={18} />
+            {/* Profile URL strip */}
+            <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#8a8a8a] shrink-0">
+                  <Link2 size={15} />
+                </div>
+                <div>
+                  <p className="text-[12px] font-[600] text-[#8a8a8a]">Public profile URL</p>
+                  <p className="text-[13px] font-[450] text-[#f5f5f5] font-mono">
+                    hiresense.online/student/{targetProfile.username}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-0.5 min-w-0">
-                <p className="text-[12px] font-[600] text-[#8a8a8a]">Contact email</p>
-                <p className="text-[14px] font-[600] text-[#f5f5f5] truncate">
-                  {targetProfile.email}
-                </p>
-              </div>
+
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#141414] px-3.5 text-[12px] font-[600] text-[#8a8a8a] border border-[rgba(255,255,255,0.08)] transition-colors hover:text-[#f5f5f5] self-start sm:self-auto"
+              >
+                {copiedLink ? <CheckCheck size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                <span>{copiedLink ? "Link copied" : "Copy link"}</span>
+              </button>
             </div>
           </div>
-
-          {/* Profile URL strip */}
-          <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#8a8a8a] shrink-0">
-                <Link2 size={15} />
-              </div>
-              <div>
-                <p className="text-[12px] font-[600] text-[#8a8a8a]">Public profile URL</p>
-                <p className="text-[13px] font-[450] text-[#f5f5f5] font-mono">
-                  hiresense.online/student/{targetProfile.username}
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#141414] px-3.5 text-[12px] font-[600] text-[#8a8a8a] border border-[rgba(255,255,255,0.08)] transition-colors hover:text-[#f5f5f5] self-start sm:self-auto"
-            >
-              {copiedLink ? <CheckCheck size={13} className="text-emerald-400" /> : <Copy size={13} />}
-              <span>{copiedLink ? "Link copied" : "Copy link"}</span>
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Responsible AI Platform Statement */}
         <div className="rounded-[20px] bg-[#141414]/50 border border-[rgba(255,255,255,0.06)] p-5 text-left space-y-1.5">
@@ -715,4 +1034,3 @@ function StudentProfilePage() {
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bookmark, MapPin, Building2, Clock, Sparkles } from "lucide-react";
 import type { Job, StructuredJobListing } from "@/types/database.types";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 interface JobCardProps {
   job: Job;
@@ -95,7 +96,8 @@ export function JobCard({ job, isSelected = false, onSelect, isRecruiter = false
         {job.title}
       </h3>
 
-      <div className="mt-1 flex items-center gap-2 text-[14px] text-[#9a9a9a] font-[450]">
+      <div className="mt-1.5 flex items-center gap-2 text-[14px] text-[#9a9a9a] font-[450]">
+        <CompanyLogo name={job.company_name} size="xs" />
         <span className="font-[600] text-[#f5f5f5]">{job.company_name}</span>
         <span>•</span>
         <span className="inline-flex items-center gap-1">

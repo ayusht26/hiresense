@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import type { Job, StructuredJobListing } from "@/types/database.types";
 import { TechLogoTile } from "./TechLogoTile";
+import { CompanyLogo } from "./CompanyLogo";
 
 interface JobDetailPanelProps {
   job: Job;
@@ -61,8 +62,8 @@ export function JobDetailPanel({
       <div className="space-y-4 border-b border-[rgba(255,255,255,0.08)] pb-6">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1a1a1a] text-[12px] font-[600] text-[#f5f5f5] border border-[rgba(255,255,255,0.10)]">
-              <Building2 size={13} className="text-[#8a8a8a]" />
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1a1a1a] text-[12px] font-[600] text-[#f5f5f5] border border-[rgba(255,255,255,0.10)]">
+              <CompanyLogo name={job.company_name} size="xs" />
               <span>{job.company_name}</span>
             </span>
 
