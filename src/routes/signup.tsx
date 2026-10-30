@@ -140,14 +140,11 @@ function SignupPage() {
 
   // Step 2 Password Validation
   const validatePassword = (pwd: string) => {
-    if (pwd.length < 8) {
-      return "Must be at least 8 characters.";
+    if (pwd.length < 6) {
+      return "Must be at least 6 characters.";
     }
-    if (!/[A-Za-z]/.test(pwd) || !/[0-9]/.test(pwd)) {
-      return "Must contain at least one letter and one number.";
-    }
-    if (pwd.length > 64) {
-      return "Maximum 64 characters.";
+    if (pwd.length > 72) {
+      return "Maximum 72 characters.";
     }
     return null;
   };
@@ -160,6 +157,37 @@ function SignupPage() {
   };
 
   const handleStep2Submit = async () => {
+    const trimmedUser = username.trim();
+    if (!trimmedUser) {
+      setUsernameStatus("invalid");
+      setUsernameMessage("Username is required.");
+      return;
+    }
+
+    if (usernameStatus !== "available") {
+      if (usernameStatus === "idle" || usernameStatus === "checking") {
+        setLoading(true);
+        try {
+          const available = await checkUsernameAvailability(trimmedUser);
+          if (available) {
+            setUsernameStatus("available");
+            setUsernameMessage("Username is available.");
+          } else {
+            setUsernameStatus("taken");
+            setUsernameMessage("That username is taken.");
+            setLoading(false);
+            return;
+          }
+        } catch {
+          setLoading(false);
+          return;
+        }
+        setLoading(false);
+      } else {
+        return;
+      }
+    }
+
     const pwdErr = validatePassword(password);
     if (pwdErr) {
       setPasswordError(pwdErr);
@@ -167,11 +195,7 @@ function SignupPage() {
     }
     setPasswordError(null);
 
-    if (usernameStatus !== "available") {
-      return;
-    }
-
-    if (!isPasswordConfirmed || password !== confirmPassword) {
+    if (password !== confirmPassword) {
       return;
     }
 
@@ -244,8 +268,9 @@ function SignupPage() {
   const isStep2Valid =
     usernameStatus === "available" &&
     validatePassword(password) === null &&
-    isPasswordConfirmed &&
-    password === confirmPassword;
+    (isPasswordConfirmed || password === confirmPassword) &&
+    password.length >= 6 &&
+    confirmPassword.length >= 6;
 
   if (needsEmailConfirm) {
     return (
@@ -433,7 +458,7 @@ function SignupPage() {
                 label="Password"
                 htmlFor="signup-password"
                 error={passwordError || undefined}
-                hint="At least 8 characters, with letters and numbers."
+                hint="At least 6 characters."
                 required
               >
                 <SmoothInput
@@ -444,13 +469,19 @@ function SignupPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (passwordError) setPasswordError(null);
+                    const val = e.target.value;
+                    setPassword(val);
+                    if (passwordError) {
+                      const err = validatePassword(val);
+                      setPasswordError(err);
+                    }
                   }}
                   onBlur={() => {
                     const err = validatePassword(password);
                     if (err) setPasswordError(err);
                   }}
+                  error={passwordError || undefined}
+                  hint="At least 6 characters."
                   disabled={loading}
                   required
                   endAdornment={

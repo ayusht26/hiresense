@@ -43,8 +43,8 @@ export function AssistedPasswordConfirmation({
   const passwordsMatch = isPasswordReady && isConfirmEntered && password === value;
 
   useEffect(() => {
-    onMatchChange?.(passwordsMatch);
-  }, [passwordsMatch, onMatchChange]);
+    onMatchChange?.(passwordsMatch && password.length >= 6);
+  }, [passwordsMatch, password.length, onMatchChange]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextVal = e.target.value;
@@ -111,7 +111,7 @@ export function AssistedPasswordConfirmation({
           "border border-[rgba(255,255,255,0.08)]",
           isFocused
             ? "border-transparent ring-2 ring-[#f5f5f5]"
-            : passwordsMatch
+            : passwordsMatch && password.length >= 6
               ? "border-[#22c55e]/40 ring-1 ring-[#22c55e]/30"
               : isConfirmEntered
                 ? "border-[#ef4444]/40 ring-1 ring-[#ef4444]/20"
@@ -214,10 +214,16 @@ export function AssistedPasswordConfirmation({
           </p>
         ) : isConfirmEntered ? (
           passwordsMatch ? (
-            <p className="flex items-center gap-1.5 text-[13px] font-medium text-[#22c55e]">
-              <Check size={14} className="shrink-0" />
-              <span>Passwords match.</span>
-            </p>
+            password.length < 6 ? (
+              <p className="flex items-center gap-1.5 text-[13px] font-[450] text-[#8a8a8a]">
+                <span>Password must be at least 6 characters.</span>
+              </p>
+            ) : (
+              <p className="flex items-center gap-1.5 text-[13px] font-medium text-[#22c55e]">
+                <Check size={14} className="shrink-0" />
+                <span>Passwords match.</span>
+              </p>
+            )
           ) : (
             <p className="flex items-center gap-1.5 text-[13px] font-[450] text-[#ef4444]">
               <X size={14} className="shrink-0" />
