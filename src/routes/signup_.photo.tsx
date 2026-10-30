@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AuthLayout } from "@/components/hs/AuthLayout";
 import { ProgressIndicator, StepActions } from "@/components/ui/progress-indicator";
-import { FileUpload } from "@/components/ui/file-upload";
+import { AvatarUpload } from "@/components/ui/avatar-upload";
 import { supabase, fetchUserProfile } from "@/lib/supabase";
 import type { Profile } from "@/types/database.types";
 
@@ -182,7 +182,7 @@ function SignupPhotoPage() {
 
         {/* File Upload Component */}
         <div className="space-y-6">
-          <FileUpload
+          <AvatarUpload
             value={selectedFile}
             onFileSelect={setSelectedFile}
             acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}

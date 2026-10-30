@@ -21,7 +21,7 @@ import {
 import { supabase, fetchUserProfile, fetchProfileByUsername } from "@/lib/supabase";
 import type { Profile } from "@/types/database.types";
 import ProfileDropdown from "@/components/kokonutui/profile-dropdown";
-import { FileUpload } from "@/components/ui/file-upload";
+import { AvatarUpload } from "@/components/ui/avatar-upload";
 import { UniversityLogo } from "@/components/UniversityLogo";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
@@ -495,7 +495,7 @@ function StudentProfilePage() {
                 <label className="block text-[12px] font-[600] text-[#8a8a8a]">
                   Profile photo
                 </label>
-                <FileUpload
+                <AvatarUpload
                   value={selectedFile}
                   onFileSelect={setSelectedFile}
                   acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
