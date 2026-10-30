@@ -37,4 +37,4 @@ src/
   lib/              # Utilities
   hooks/            # Custom hooks
   styles.css        # Tailwind v4 + CSS variable tokens
-```
+``
