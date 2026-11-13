@@ -457,6 +457,7 @@ function JobApplyPage() {
             <InterviewLaunchCard
               candidateName={analysisResult.candidate_name}
               targetJobTitle={job.title}
+              jobPosting={(job.generated_posting as any) || {}}
               preferredLanguage="en"
               verificationQuestions={analysisResult.verification_questions}
             />

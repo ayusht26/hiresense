@@ -1,42 +1,31 @@
 import { useState } from "react";
 import {
   Video,
-  Mic,
   Languages,
   ArrowRight,
-  ShieldAlert,
   Sparkles,
   CheckCircle2,
   Clock,
-  X,
 } from "lucide-react";
+import { AiInterviewRoom } from "@/components/interview/AiInterviewRoom";
 
 interface InterviewLaunchCardProps {
   candidateName: string;
   targetJobTitle: string;
-  preferredLanguage: "en" | "hi" | "code_mixed";
-  verificationQuestions: string[];
+  jobPosting?: Record<string, any>;
+  preferredLanguage?: "en" | "hi" | "code_mixed";
+  verificationQuestions?: string[];
 }
 
 export function InterviewLaunchCard({
   candidateName,
   targetJobTitle,
-  preferredLanguage,
-  verificationQuestions,
+  jobPosting = {},
+  preferredLanguage = "en",
+  verificationQuestions = [],
 }: InterviewLaunchCardProps) {
   const [selectedLanguage, setSelectedLanguage] = useState(preferredLanguage);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const getLanguageLabel = (code: string) => {
-    switch (code) {
-      case "hi":
-        return "Hindi (हिन्दी)";
-      case "code_mixed":
-        return "Hinglish (Code-mixed)";
-      default:
-        return "English";
-    }
-  };
+  const [isInterviewOpen, setIsInterviewOpen] = useState(false);
 
   return (
     <>
@@ -45,7 +34,7 @@ export function InterviewLaunchCard({
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-[11px] font-[600] text-[#60a5fa] border border-[#3b82f6]/30">
-                Next Step · AI Technical Assessment
+                Next Step · AI Technical Assessment with Mira
               </span>
             </div>
             <h3 className="text-[22px] sm:text-[26px] font-[650] tracking-tight text-[#f5f5f5]">
@@ -60,7 +49,7 @@ export function InterviewLaunchCard({
           {/* Primary Start Interview Button */}
           <button
             type="button"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsInterviewOpen(true)}
             className="inline-flex h-12 items-center gap-2 rounded-full bg-[#f5f5f5] px-8 text-[15px] font-[600] text-[#0a0a0a] transition-all hover:bg-[#e0e0e0] active:scale-[0.98] shadow-lg self-start sm:self-center shrink-0"
           >
             <span>Start AI interview</span>
@@ -98,16 +87,16 @@ export function InterviewLaunchCard({
           <div className="rounded-[16px] bg-[#1a1a1a] p-4 border border-[rgba(255,255,255,0.06)] space-y-2">
             <div className="flex items-center gap-2 text-[12px] font-[600] text-[#8a8a8a]">
               <Video size={14} className="text-[#f5f5f5]" />
-              <span>Proctoring & Device Readiness</span>
+              <span>AI Interviewer & Video Mirror</span>
             </div>
             <div className="flex items-center gap-3 pt-1 text-[13px] font-[500] text-[#f5f5f5]">
               <span className="inline-flex items-center gap-1.5 text-emerald-400">
                 <CheckCircle2 size={13} />
-                <span>Microphone ready</span>
+                <span>Mira AI Ready</span>
               </span>
               <span className="inline-flex items-center gap-1.5 text-emerald-400">
                 <CheckCircle2 size={13} />
-                <span>Camera ready</span>
+                <span>Webcam & Mic Check</span>
               </span>
             </div>
           </div>
@@ -119,7 +108,7 @@ export function InterviewLaunchCard({
               <span>Duration & Format</span>
             </div>
             <p className="text-[13px] font-[600] text-[#f5f5f5] pt-1">
-              ~15–20 minutes · 5 structured questions
+              ~15 minutes · 5 structured questions
             </p>
           </div>
         </div>
@@ -142,63 +131,16 @@ export function InterviewLaunchCard({
         )}
       </div>
 
-      {/* Confirmation Modal when user clicks "Start AI Interview" */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.15)] p-7 space-y-5 text-left shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1a1a1a] text-[#f5f5f5] border border-[rgba(255,255,255,0.12)]">
-                  <Video size={16} />
-                </div>
-                <div>
-                  <h4 className="text-[16px] font-[650] text-[#f5f5f5]">
-                    AI Interview Initialized.
-                  </h4>
-                  <span className="text-[12px] text-[#8a8a8a]">
-                    Language: {getLanguageLabel(selectedLanguage)}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="text-[#8a8a8a] hover:text-[#f5f5f5]"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-[14px] font-[450] text-[#8a8a8a] leading-relaxed">
-              <p>
-                Candidate <strong className="text-[#f5f5f5]">{candidateName}</strong> is registered
-                and verified for the technical interview session for{" "}
-                <strong className="text-[#f5f5f5]">{targetJobTitle}</strong>.
-              </p>
-              <div className="rounded-[16px] bg-[#1a1a1a] p-3.5 border border-[rgba(255,255,255,0.06)] space-y-1.5 text-[13px]">
-                <div className="flex items-center gap-2 text-emerald-400 font-[600]">
-                  <CheckCircle2 size={14} />
-                  <span>Session Pipeline Ready</span>
-                </div>
-                <p className="text-[#707070] text-[12px]">
-                  Audio transcription, speech synthesis, and proctoring state machines have been
-                  prepared for this application.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="h-10 px-6 rounded-full bg-[#f5f5f5] text-[#0a0a0a] text-[13px] font-[600] hover:bg-[#e0e0e0] transition-colors"
-              >
-                Close preview
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Live AI Interview Room Modal */}
+      {isInterviewOpen && (
+        <AiInterviewRoom
+          candidateName={candidateName}
+          targetJobTitle={targetJobTitle}
+          jobPosting={jobPosting}
+          verificationQuestions={verificationQuestions}
+          preferredLanguage={selectedLanguage}
+          onClose={() => setIsInterviewOpen(false)}
+        />
       )}
     </>
   );

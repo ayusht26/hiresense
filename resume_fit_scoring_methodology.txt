@@ -1,0 +1,113 @@
+================================================================================
+HIRESENSE RESUME FIT SCORING METHODOLOGY
+================================================================================
+
+1. OVERVIEW & PHILOSOPHY
+--------------------------------------------------------------------------------
+HireSense rejects black-box scoring. Every compatibility score is calculated using
+an evidence-backed hybrid evaluation model where all claims trace directly to 
+verbatim text spans in the candidate's resume.
+
+The score serves as a decision-support and interview-preparation guide for
+recruiters—not an automated hiring or rejection gate. People make every decision.
+
+
+2. THE COMPOSITE FIT FORMULA
+--------------------------------------------------------------------------------
+The overall job compatibility score (0 to 100%) is calculated across six
+weighted dimensions:
+
+Match Score = 0.40 * Skills Score
+            + 0.20 * Experience Score
+            + 0.15 * Project Relevance Score
+            + 0.10 * Education Score
+            + 0.10 * Responsibility Score
+            + 0.05 * Evidence Quality Score
+
+WEIGHT DISTRIBUTION SUMMARY:
+- Weighted Skill Match:             40%
+- Experience Fit:                   20%
+- Project & Role Relevance:         15%
+- Education & Certification Fit:    10%
+- Responsibility Semantic Match:    10%
+- Evidence Quality:                  5%
+
+
+3. DIMENSION BREAKDOWN
+--------------------------------------------------------------------------------
+A. WEIGHTED SKILL MATCH (40%)
+   * Mandatory vs. Preferred Requirements:
+     Mandatory skills (e.g., React, TypeScript) carry primary weight. Preferred
+     skills (e.g., Tailwind CSS, Supabase) provide secondary advantage.
+   * Alias Normalization:
+     Variations and abbreviations are mapped to canonical forms before matching:
+     - JS, ES6    -> JavaScript
+     - TS         -> TypeScript
+     - Postgres   -> PostgreSQL
+     - Tailwind   -> Tailwind CSS
+   * Evidence Attribution:
+     A skill is only counted as matched if accompanied by context in the resume
+     text (e.g., within an experience bullet or project description), rather than
+     assuming familiarity solely because related technologies are present.
+
+B. EXPERIENCE FIT (20%)
+   * Evaluates career timeline, tenure, and trajectory against the expected
+     seniority tier (e.g., Junior, Mid, Senior, Lead).
+   * Validates duration and continuity of relevant technical practice.
+
+C. PROJECT & ROLE RELEVANCE (15%)
+   * Evaluates hands-on execution and practical delivery.
+   * Examines whether the candidate designed, developed, or maintained real
+     systems, architecture, or user-facing applications.
+
+D. EDUCATION & CERTIFICATION FIT (10%)
+   * Evaluates relevant degrees (e.g., B.Tech, B.S., or Master's in Computer
+     Science / Engineering) or accredited industry certifications directly
+     applicable to the job profile.
+
+E. RESPONSIBILITY SEMANTIC MATCH (10%)
+   * Assesses semantic overlap between past job roles and the target job
+     description (e.g., collaborating with cross-functional teams, managing APIs,
+     maintaining high test coverage).
+
+F. EVIDENCE QUALITY (5%)
+   * Rewards depth, concrete context, and descriptive outcomes.
+   * Penalizes keyword lists that lack supporting explanation of where and how
+     the skills were applied.
+
+
+4. REQUIREMENT AUDIT MATRIX & GAP ANALYSIS
+--------------------------------------------------------------------------------
+Every requirement in the job profile is audited and mapped to one of three states:
+- Matched: Direct, verifiable evidence found in the resume text with quotation
+  references.
+- Partial: Related skills or limited exposure identified, but depth or direct
+  applicability is unclear.
+- Missing: No direct mention or evidence identified in the candidate's profile.
+
+Gap Severity Classification:
+- Critical: Missing mandatory requirement; requires explicit verification during
+  technical interviews.
+- Moderate: Missing preferred requirement or partially demonstrated mandatory skill.
+- Minor: Contextual or soft skill missing direct evidence.
+
+
+5. RESPONSIBLE AI & GOVERNANCE RULES
+--------------------------------------------------------------------------------
+1. Mandatory Gates, Not Hidden Penalties:
+   Missing mandatory qualifications are highlighted as explicit Critical Gaps in
+   the Requirement Matrix rather than being buried within an aggregated score.
+
+2. Exclusion of Protected Attributes:
+   The matching engine operates exclusively on skills, experience, and evidence.
+   It never factors in race, gender, age, nationality, or irrelevant personal
+   identifiable information (PII).
+
+3. No Hallucinated Equivalencies:
+   The engine does not presume competency in an unmentioned tool solely because
+   the candidate knows an adjacent tool.
+
+4. Human in the Loop:
+   The compatibility percentage is a conversation roadmap and audit tool for hiring
+   teams, accompanied by suggested verification questions for interviews. Final
+   decisions remain strictly with human recruiters.
