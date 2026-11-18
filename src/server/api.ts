@@ -34,6 +34,23 @@ function resolveOpenAiVoice(voiceCandidate?: string): string {
   return "onyx";
 }
 
+// Multi-key helper to parse comma-separated GEMINI_API_KEY
+function getGeminiApiKeys(): string[] {
+  const raw = process.env["GEMINI_API_KEY"] || "";
+  return raw
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
+}
+
+const CANDIDATE_GEMINI_MODELS = [
+  LLM_MODEL_PRIMARY,
+  "gemini-3.5-flash",
+  "gemini-flash-latest",
+  "gemini-3.5-flash-lite",
+  "gemini-flash-lite-latest",
+];
+
 // Retry helper with backoff on 429/5xx and response logging
 async function fetchWithRetry(
   tag: string,
@@ -180,7 +197,7 @@ export async function handleInterviewPlan(payload: PlanRequest) {
 
   const execPromise = (async () => {
     const t0 = Date.now();
-    const geminiKey = process.env["GEMINI_API_KEY"]?.trim();
+    const geminiKeys = getGeminiApiKeys();
     const openAiKey = process.env["OPENAI_API_KEY"]?.trim();
 
     const companyName =
@@ -271,62 +288,82 @@ Candidate Resume Analysis: ${JSON.stringify(payload.analysis || {})}`;
       );
     };
 
-    // 1. Try Gemini primary
-    if (geminiKey) {
-      try {
-        let attemptPrompt = userPromptContent;
-        for (let attempt = 0; attempt < 2; attempt++) {
-          const resp = await fetchWithRetry(
-            "interview/plan.gemini",
-            `https://generativelanguage.googleapis.com/v1beta/models/${LLM_MODEL_PRIMARY}:generateContent?key=${geminiKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [
-                  {
-                    parts: [{ text: systemPrompt }, { text: attemptPrompt }],
-                  },
-                ],
-                generationConfig: {
-                  responseMimeType: "application/json",
-                  temperature: attempt === 0 ? 0.2 : 0.0,
-                },
-              }),
-            },
-            TIMEOUT_LLM,
-          );
+    // 1. Try Gemini primary (with multi-key rotation and model fallback)
+    if (geminiKeys.length > 0) {
+      for (let kIdx = 0; kIdx < geminiKeys.length; kIdx++) {
+        const currentGeminiKey = geminiKeys[kIdx];
+        let keyExhausted = false;
 
-          if (resp.ok) {
-            const data = await resp.json();
-            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (rawText) {
-              try {
-                const parsed = JSON.parse(rawText);
-                const valResult = tryValidate(parsed);
-                if (valResult.valid) {
-                  console.log(`[interview/plan] Generated via Gemini in ${Date.now() - t0}ms`);
-                  const plan = {
-                    questions: (parsed.questions as InterviewQuestion[]).slice(0, 5),
-                    modelUsed: LLM_MODEL_PRIMARY,
-                    source: "llm" as const,
-                  };
-                  planCache.set(cacheKey, { timestamp: Date.now(), plan });
-                  return plan;
-                } else if (attempt === 0) {
-                  attemptPrompt += `\n\nPREVIOUS ATTEMPT ERRORS (FIX THEM STRICTLY):\n${valResult.errors.join("\n")}`;
+        for (const candidateModel of CANDIDATE_GEMINI_MODELS) {
+          try {
+            let attemptPrompt = userPromptContent;
+            for (let attempt = 0; attempt < 2; attempt++) {
+              const resp = await fetchWithRetry(
+                `interview/plan.gemini[key#${kIdx + 1}]`,
+                `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${currentGeminiKey}`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    contents: [
+                      {
+                        parts: [{ text: systemPrompt }, { text: attemptPrompt }],
+                      },
+                    ],
+                    generationConfig: {
+                      responseMimeType: "application/json",
+                      temperature: attempt === 0 ? 0.2 : 0.0,
+                    },
+                  }),
+                },
+                TIMEOUT_LLM,
+              );
+
+              if (resp.ok) {
+                const data = await resp.json();
+                const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (rawText) {
+                  try {
+                    const parsed = JSON.parse(rawText);
+                    const valResult = tryValidate(parsed);
+                    if (valResult.valid) {
+                      console.log(`[interview/plan] Generated via Gemini (${candidateModel}) with key #${kIdx + 1} in ${Date.now() - t0}ms`);
+                      const plan = {
+                        questions: (parsed.questions as InterviewQuestion[]).slice(0, 5),
+                        modelUsed: candidateModel,
+                        source: "llm" as const,
+                      };
+                      planCache.set(cacheKey, { timestamp: Date.now(), plan });
+                      return plan;
+                    } else if (attempt === 0) {
+                      attemptPrompt += `\n\nPREVIOUS ATTEMPT ERRORS (FIX THEM STRICTLY):\n${valResult.errors.join("\n")}`;
+                    }
+                  } catch (parseErr) {
+                    console.warn("[interview/plan] JSON parse error from Gemini:", parseErr);
+                  }
                 }
-              } catch (parseErr) {
-                console.warn("[interview/plan] JSON parse error from Gemini:", parseErr);
+              } else {
+                const status = resp.status;
+                const errSnippet = await resp.clone().text().catch(() => "");
+                if (
+                  status === 429 ||
+                  status === 403 ||
+                  errSnippet.includes("RESOURCE_EXHAUSTED") ||
+                  errSnippet.includes("quota")
+                ) {
+                  console.warn(`[interview/plan] Gemini key #${kIdx + 1} quota/billing exhausted (${status}). Rotating to next key...`);
+                  keyExhausted = true;
+                  break;
+                }
               }
             }
-          } else {
-            // On non-OK HTTP status (e.g. 429 quota exhaustion), break immediately to fallback provider
-            break;
+          } catch (geminiErr) {
+            console.warn(`[interview/plan] Gemini error with ${candidateModel} on key #${kIdx + 1}:`, geminiErr);
           }
+          if (keyExhausted) break;
         }
-      } catch (geminiErr) {
-        console.warn("[interview/plan] Gemini fallback:", geminiErr);
+
+        if (keyExhausted) continue;
       }
     }
 
@@ -514,7 +551,7 @@ const LlmEvaluateResponseSchema = z.object({
 
 export async function handleInterviewEvaluate(payload: EvaluateRequest) {
   const t0 = Date.now();
-  const geminiKey = process.env["GEMINI_API_KEY"]?.trim();
+  const geminiKeys = getGeminiApiKeys();
   const openAiKey = process.env["OPENAI_API_KEY"]?.trim();
 
   // Check if all questions were unanswered
@@ -765,56 +802,76 @@ Duration: ${payload.durations[q.id] || 0}s`,
     };
   };
 
-  // 1. Try Gemini Primary
-  if (geminiKey) {
-    try {
-      let promptToUse = promptContent;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const resp = await fetchWithRetry(
-          "interview/evaluate.gemini",
-          `https://generativelanguage.googleapis.com/v1beta/models/${LLM_MODEL_PRIMARY}:generateContent?key=${geminiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [
-                {
-                  parts: [{ text: systemPrompt }, { text: promptToUse }],
-                },
-              ],
-              generationConfig: {
-                responseMimeType: "application/json",
-                temperature: attempt === 0 ? 0.1 : 0.0,
-              },
-            }),
-          },
-          TIMEOUT_LLM,
-        );
+  // 1. Try Gemini Primary (with multi-key rotation and model fallback)
+  if (geminiKeys.length > 0) {
+    for (let kIdx = 0; kIdx < geminiKeys.length; kIdx++) {
+      const currentGeminiKey = geminiKeys[kIdx];
+      let keyExhausted = false;
 
-        if (resp.ok) {
-          const data = await resp.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            try {
-              const rawJson = JSON.parse(text);
-              const validated = LlmEvaluateResponseSchema.safeParse(rawJson);
-              if (validated.success) {
-                console.log(`[interview/evaluate] Evaluated via Gemini in ${Date.now() - t0}ms`);
-                return processLlmResponse(validated.data, LLM_MODEL_PRIMARY);
-              } else if (attempt === 0) {
-                promptToUse += `\n\nSCHEMA VALIDATION ERRORS FROM PREVIOUS ATTEMPT (FIX STRICTLY):\n${validated.error.issues.map((i) => i.message).join("\n")}`;
+      for (const candidateModel of CANDIDATE_GEMINI_MODELS) {
+        try {
+          let promptToUse = promptContent;
+          for (let attempt = 0; attempt < 2; attempt++) {
+            const resp = await fetchWithRetry(
+              `interview/evaluate.gemini[key#${kIdx + 1}]`,
+              `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${currentGeminiKey}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [
+                    {
+                      parts: [{ text: systemPrompt }, { text: promptToUse }],
+                    },
+                  ],
+                  generationConfig: {
+                    responseMimeType: "application/json",
+                    temperature: attempt === 0 ? 0.1 : 0.0,
+                  },
+                }),
+              },
+              TIMEOUT_LLM,
+            );
+
+            if (resp.ok) {
+              const data = await resp.json();
+              const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text) {
+                try {
+                  const rawJson = JSON.parse(text);
+                  const validated = LlmEvaluateResponseSchema.safeParse(rawJson);
+                  if (validated.success) {
+                    console.log(`[interview/evaluate] Evaluated via Gemini (${candidateModel}) with key #${kIdx + 1} in ${Date.now() - t0}ms`);
+                    return processLlmResponse(validated.data, candidateModel);
+                  } else if (attempt === 0) {
+                    promptToUse += `\n\nSCHEMA VALIDATION ERRORS FROM PREVIOUS ATTEMPT (FIX STRICTLY):\n${validated.error.issues.map((i) => i.message).join("\n")}`;
+                  }
+                } catch (parseErr) {
+                  console.warn("[interview/evaluate] Gemini JSON parse error:", parseErr);
+                }
               }
-            } catch (parseErr) {
-              console.warn("[interview/evaluate] Gemini JSON parse error:", parseErr);
+            } else {
+              const status = resp.status;
+              const errSnippet = await resp.clone().text().catch(() => "");
+              if (
+                status === 429 ||
+                status === 403 ||
+                errSnippet.includes("RESOURCE_EXHAUSTED") ||
+                errSnippet.includes("quota")
+              ) {
+                console.warn(`[interview/evaluate] Gemini key #${kIdx + 1} quota/billing exhausted (${status}). Rotating to next key...`);
+                keyExhausted = true;
+                break;
+              }
             }
           }
-        } else {
-          // On non-OK HTTP status (e.g. 429 quota exhaustion), break immediately to fallback provider
-          break;
+        } catch (e) {
+          console.warn(`[interview/evaluate] Gemini error with ${candidateModel} on key #${kIdx + 1}:`, e);
         }
+        if (keyExhausted) break;
       }
-    } catch (e) {
-      console.warn("[interview/evaluate] Gemini fallback:", e);
+
+      if (keyExhausted) continue;
     }
   }
 
@@ -899,7 +956,7 @@ export type TranscribeRequest = z.infer<typeof TranscribeRequestSchema>;
 
 export async function handleSpeechTranscribe(payload: TranscribeRequest) {
   const t0 = Date.now();
-  const geminiKey = process.env["GEMINI_API_KEY"]?.trim();
+  const geminiKeys = getGeminiApiKeys();
   const openAiKey = process.env["OPENAI_API_KEY"]?.trim();
 
   // Language-specific transcription prompts
@@ -918,48 +975,79 @@ Rules:
 - Output ONLY the transcription text. No preface, no explanations, no summaries.
 - Mark inaudible, cut-off, or unintelligible speech as [inaudible].`;
 
-  // 1. Try Gemini Audio Transcription
-  if (geminiKey && payload.audioBase64.length > 50) {
-    try {
-      const resp = await fetchWithRetry(
-        "speech/transcribe.gemini",
-        `https://generativelanguage.googleapis.com/v1beta/models/${STT_MODEL}:generateContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: prompt },
+  // 1. Try Gemini Audio Transcription (with multi-key rotation and model fallback)
+  if (geminiKeys.length > 0 && payload.audioBase64.length > 50) {
+    const candidateSttModels = [
+      STT_MODEL,
+      "gemini-3.8-flash",
+      "gemini-3.5-flash",
+      "gemini-3.5-transcribe",
+      "gemini-flash-latest",
+    ];
+
+    for (let kIdx = 0; kIdx < geminiKeys.length; kIdx++) {
+      const currentGeminiKey = geminiKeys[kIdx];
+      let keyExhausted = false;
+
+      for (const candidateModel of candidateSttModels) {
+        try {
+          const resp = await fetchWithRetry(
+            `speech/transcribe.gemini[key#${kIdx + 1}]`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${currentGeminiKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [
                   {
-                    inlineData: {
-                      mimeType: (payload.mimeType || "audio/webm").split(";")[0],
-                      data: payload.audioBase64,
-                    },
+                    parts: [
+                      { text: prompt },
+                      {
+                        inlineData: {
+                          mimeType: (payload.mimeType || "audio/webm").split(";")[0],
+                          data: payload.audioBase64,
+                        },
+                      },
+                    ],
                   },
                 ],
-              },
-            ],
-          }),
-        },
-        TIMEOUT_STT,
-      );
+              }),
+            },
+            TIMEOUT_STT,
+          );
 
-      if (resp.ok) {
-        const data = await resp.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (text && text.length > 0) {
-          console.log(`[speech/transcribe] Gemini transcribed in ${Date.now() - t0}ms`);
-          return {
-            transcript: text,
-            provider: "gemini",
-            confidence: null,
-          };
+          if (resp.ok) {
+            const data = await resp.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (text && text.length > 0) {
+              console.log(`[speech/transcribe] Gemini (${candidateModel}) transcribed with key #${kIdx + 1} in ${Date.now() - t0}ms`);
+              return {
+                transcript: text,
+                provider: "gemini",
+                confidence: null,
+              };
+            }
+          } else {
+            const status = resp.status;
+            const errSnippet = await resp.clone().text().catch(() => "");
+            if (
+              status === 429 ||
+              status === 403 ||
+              errSnippet.includes("RESOURCE_EXHAUSTED") ||
+              errSnippet.includes("quota")
+            ) {
+              console.warn(`[speech/transcribe] Gemini key #${kIdx + 1} quota/billing exhausted (${status}). Rotating to next key...`);
+              keyExhausted = true;
+              break;
+            }
+          }
+        } catch (e) {
+          console.warn(`[speech/transcribe] Gemini error with ${candidateModel} on key #${kIdx + 1}:`, e);
         }
+        if (keyExhausted) break;
       }
-    } catch (e) {
-      console.warn("[speech/transcribe] Gemini audio fallback:", e);
+
+      if (keyExhausted) continue;
     }
   }
 

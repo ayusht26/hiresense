@@ -218,11 +218,19 @@ async def call_openai_structuring(prompt_user_content: str, api_key: str) -> dic
         return json.loads(raw_content)
 
 
-async def call_gemini_structuring(prompt_user_content: str, api_key: str) -> dict:
+GEMINI_MODELS = [
+    os.environ.get("LLM_MODEL_PRIMARY", "gemini-3.8-flash"),
+    "gemini-3.5-flash",
+    "gemini-flash-latest",
+    "gemini-3.5-flash-lite",
+    "gemini-flash-lite-latest",
+]
+
+async def call_gemini_structuring(prompt_user_content: str, api_key: str, model_name: str = "gemini-3.8-flash") -> dict:
     """
     Calls Google Gemini API with JSON mode fallback.
     """
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     payload = {
         "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
@@ -270,7 +278,7 @@ Recruiter Raw Description:
 Generate the structured JSON job listing according to the rules and schema."""
 
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    gemini_keys = [k.strip() for k in os.environ.get("GEMINI_API_KEY", "").split(",") if k.strip()]
 
     model_used = ""
     parsed_json = None
@@ -288,15 +296,46 @@ Generate the structured JSON job listing according to the rules and schema."""
                 logger.warning(f"OpenAI attempt {attempt + 1} failed: {e}")
                 last_error = e
 
-    # Step 2: Fallback to Gemini if OpenAI failed or no key
-    if not parsed_json and gemini_key:
-        try:
-            logger.info("Falling back to Google Gemini 2.5 Flash...")
-            parsed_json = await call_gemini_structuring(user_prompt, gemini_key)
-            model_used = "google/gemini-2.5-flash"
-        except Exception as e:
-            logger.error(f"Gemini fallback failed: {e}")
-            last_error = e
+    # Step 2: Fallback to Gemini if OpenAI failed or no key (supports multiple rotating keys)
+    if not parsed_json and gemini_keys:
+        for k_idx, current_key in enumerate(gemini_keys):
+            key_mask = f"{current_key[:8]}...{current_key[-4:]}"
+            logger.info(f"Evaluating Gemini API Key [{k_idx+1}/{len(gemini_keys)}] ({key_mask})...")
+            key_exhausted = False
+
+            for candidate_model in GEMINI_MODELS:
+                try:
+                    logger.info(f"Calling Gemini ({candidate_model}) with key #{k_idx+1}...")
+                    parsed_json = await call_gemini_structuring(user_prompt, current_key, candidate_model)
+                    model_used = f"google/{candidate_model}"
+                    logger.info(f"Gemini structuring succeeded via key #{k_idx+1} ({candidate_model})")
+                    break
+                except httpx.HTTPStatusError as http_err:
+                    status_code = http_err.response.status_code
+                    err_body = http_err.response.text.lower()
+                    if status_code == 429 or "quota" in err_body or "resource_exhausted" in err_body:
+                        logger.warning(f"Gemini key #{k_idx+1} quota/credits exhausted (429). Rotating to next key...")
+                        key_exhausted = True
+                        break
+                    elif status_code == 403:
+                        logger.warning(f"Gemini key #{k_idx+1} unauthorized/free tier unavailable (403). Rotating to next key...")
+                        key_exhausted = True
+                        break
+                    elif status_code in (503, 404):
+                        logger.warning(f"Gemini model {candidate_model} returned {status_code}. Trying next model...")
+                        last_error = http_err
+                        continue
+                    else:
+                        logger.error(f"Gemini HTTP {status_code} on key #{k_idx+1}: {http_err}")
+                        last_error = http_err
+                except Exception as e:
+                    logger.warning(f"Gemini error with {candidate_model} on key #{k_idx+1}: {e}")
+                    last_error = e
+
+            if parsed_json:
+                break
+            if key_exhausted:
+                continue
 
     if not parsed_json:
         raise RuntimeError(

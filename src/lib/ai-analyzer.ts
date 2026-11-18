@@ -401,7 +401,10 @@ export async function executeAiResumeAnalysis(
   input: AnalyzeResumeInput,
 ): Promise<ResumeAnalysisResult> {
   const openAiKey = process.env.OPENAI_API_KEY?.trim();
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  const geminiKeys = (process.env.GEMINI_API_KEY || "")
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
 
   // 1. Resolve Resume Text (extract from base64 if needed)
   let resumeContent = input.resumeText?.trim() || "";
@@ -557,50 +560,77 @@ ${resumeContent.slice(0, 15000)}`;
     }
   }
 
-  // 2. Try Gemini if key is present
-  if (geminiKey) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [{ text: systemPrompt }, { text: userPrompt }],
-              },
-            ],
-            generationConfig: {
-              responseMimeType: "application/json",
-              temperature: 0.1,
-            },
-          }),
-          signal: AbortSignal.timeout(30000),
-        },
-      );
+  // 2. Try Gemini with multi-key credit fallback
+  if (geminiKeys.length > 0) {
+    const candidateModels = [
+      process.env.LLM_MODEL_PRIMARY || "gemini-3.8-flash",
+      "gemini-3.5-flash",
+      "gemini-flash-latest",
+      "gemini-3.5-flash-lite",
+      "gemini-flash-lite-latest",
+    ];
 
-      if (response.ok) {
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          const parsed = JSON.parse(text) as ResumeAnalysisResult;
-          parsed.model_used = "HireSense Evidence Engine";
-          parsed.analyzed_at = new Date().toISOString();
-          parsed.fit_level =
-            parsed.overall_fit_percentage >= 75
-              ? "High Fit"
-              : parsed.overall_fit_percentage >= 50
-                ? "Moderate Fit"
-                : "Developing Fit";
-          if (parsed.candidate_name === "Aarav Sharma" && resolvedName !== "Aarav Sharma") {
-            parsed.candidate_name = resolvedName;
+    for (let kIdx = 0; kIdx < geminiKeys.length; kIdx++) {
+      const currentKey = geminiKeys[kIdx];
+      let keyExhausted = false;
+
+      for (const candidateModel of candidateModels) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${currentKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    parts: [{ text: systemPrompt }, { text: userPrompt }],
+                  },
+                ],
+                generationConfig: {
+                  responseMimeType: "application/json",
+                  temperature: 0.1,
+                },
+              }),
+              signal: AbortSignal.timeout(30000),
+            },
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              const parsed = JSON.parse(text) as ResumeAnalysisResult;
+              parsed.model_used = `HireSense Evidence Engine (${candidateModel})`;
+              parsed.analyzed_at = new Date().toISOString();
+              parsed.fit_level =
+                parsed.overall_fit_percentage >= 75
+                  ? "High Fit"
+                  : parsed.overall_fit_percentage >= 50
+                    ? "Moderate Fit"
+                    : "Developing Fit";
+              if (parsed.candidate_name === "Aarav Sharma" && resolvedName !== "Aarav Sharma") {
+                parsed.candidate_name = resolvedName;
+              }
+              return parsed;
+            }
+          } else {
+            const status = response.status;
+            const errText = await response.clone().text().catch(() => "");
+            if (status === 429 || status === 403 || errText.includes("RESOURCE_EXHAUSTED") || errText.includes("quota")) {
+              console.warn(`[ai-analyzer] Gemini key #${kIdx + 1} quota/billing exhausted (${status}). Rotating to next key...`);
+              keyExhausted = true;
+              break;
+            }
           }
-          return parsed;
+        } catch (geminiErr) {
+          console.warn(`[ai-analyzer] Gemini error with ${candidateModel} on key #${kIdx + 1}:`, geminiErr);
         }
       }
-    } catch (geminiErr) {
-      console.warn("Gemini resume analysis fallback:", geminiErr);
+
+      if (keyExhausted) {
+        continue;
+      }
     }
   }
 
