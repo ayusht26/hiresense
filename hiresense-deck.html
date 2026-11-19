@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HireSense — Project Presentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #09090b;
+  --fg: #fafafa;
+  --mu: #9ca3af;
+  --faint: #52525b;
+  --card: #131316;
+  --card-hover: #19191d;
+  --card-inner: #0c0c0e;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --coral: #e07a5f;
+  --coral-light: #f4a28c;
+  --coral-glow: rgba(224, 122, 95, 0.22);
+  --coral-subtle: rgba(224, 122, 95, 0.10);
+  --serif: "Cormorant Garamond", Georgia, serif;
+  --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", SFMono-Regular, Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Slide Base */
+.s {
+  position: absolute;
+  inset: 0;
+  padding: clamp(80px, 13vh, 115px) clamp(28px, 6.5vw, 88px) clamp(44px, 7vh, 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(10px, 1.8vh, 18px);
+  background: var(--bg);
+  color: var(--fg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .45s cubic-bezier(0.16, 1, 0.3, 1), visibility .45s;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.s.on {
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+}
+
+/* Typography */
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  letter-spacing: -.025em;
+  line-height: 1.05;
+  color: var(--fg);
+}
+h1 { font-size: clamp(40px, 6.8vw, 92px); }
+h2 { font-size: clamp(30px, 4.2vw, 56px); }
+h3 { font-size: clamp(20px, 2.2vw, 30px); }
+h4 { font: 600 clamp(14px, 1.25vw, 17px) var(--sans); color: var(--fg); }
+
+.k {
+  font: 600 11.5px var(--mono);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+.lede {
+  font-size: clamp(15px, 1.4vw, 20px);
+  line-height: 1.55;
+  color: var(--mu);
+  max-width: 66ch;
+}
+.lede b { color: var(--fg); font-weight: 600; }
+.sm {
+  font-size: clamp(12px, 1.05vw, 14.5px);
+  line-height: 1.5;
+  color: var(--mu);
+}
+.mono {
+  font-family: var(--mono);
+  font-size: clamp(11.5px, 1vw, 14px);
+}
+
+/* Cards & Badges */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: clamp(14px, 1.8vw, 24px);
+  transition: border-color .2s, background .2s;
+}
+.card:hover {
+  border-color: var(--line-strong);
+}
+.card p {
+  font-size: clamp(12.5px, 1.05vw, 15px);
+  line-height: 1.5;
+  color: var(--mu);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: clamp(12px, 1vw, 13.5px);
+  font-weight: 500;
+  color: var(--fg);
+  margin: 0 8px 8px 0;
+}
+.chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+
+.file-tag {
+  display: inline-block;
+  background: rgba(224, 122, 95, 0.12);
+  color: var(--coral-light);
+  border: 1px solid rgba(224, 122, 95, 0.28);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Grids */
+.grid { display: grid; gap: clamp(12px, 1.6vw, 20px); }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+
+/* Underline Animation */
+u.d {
+  text-decoration: none;
+  position: relative;
+  color: var(--coral);
+}
+u.d:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -.04em;
+  height: 3px;
+  width: 100%;
+  background: var(--coral);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.on u.d:after { animation: draw .8s .4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Entrance Animations: Clean, simple fade */
+.r {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .5s cubic-bezier(0.16, 1, 0.3, 1), transform .5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.on .r {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(var(--i, 0) * 60ms + 80ms);
+}
+@keyframes draw { to { transform: scaleX(1); } }
+
+/* Problem Rows */
+.row {
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+  padding: clamp(10px, 1.4vh, 16px) 0;
+  border-bottom: 1px solid var(--line);
+}
+.row b {
+  font: 600 clamp(18px, 2vw, 26px) var(--mono);
+  color: var(--coral);
+  min-width: 2.2ch;
+  letter-spacing: -0.02em;
+}
+.row p {
+  font-size: clamp(14px, 1.25vw, 17px);
+  line-height: 1.45;
+  color: var(--fg);
+}
+.row span { color: var(--mu); }
+
+/* Interactive Workflow Stepper */
+.wf-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.wf-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(224, 122, 95, 0.08);
+  border: 1px solid rgba(224, 122, 95, 0.25);
+  border-radius: 9999px;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  color: var(--fg);
+}
+.wf-indicator b { color: var(--coral); font-family: var(--mono); }
+.wf-dots {
+  display: flex;
+  gap: 6px;
+}
+.wf-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line-strong);
+  transition: all .25s ease;
+  cursor: pointer;
+}
+.wf-dot.active {
+  background: var(--coral);
+  box-shadow: 0 0 8px var(--coral);
+  transform: scale(1.25);
+}
+.wf-dot.done {
+  background: rgba(224, 122, 95, 0.6);
+}
+
+.lane-wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+.lane-track {
+  position: absolute;
+  top: 24px;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  background: var(--line);
+  z-index: 0;
+}
+.lane-track-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--coral), var(--coral-light));
+  transition: width .4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wf-col {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity .35s ease, transform .35s ease;
+  padding: 0 4px;
+}
+.wf-col.future {
+  opacity: 0.35;
+  filter: grayscale(40%);
+}
+.wf-col.done {
+  opacity: 0.85;
+}
+.wf-col.active {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.wf-node {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--line-strong);
+  font: 600 15px var(--mono);
+  color: var(--mu);
+  transition: all .3s ease;
+}
+.wf-col.active .wf-node {
+  border-color: var(--coral);
+  color: #fff;
+  background: var(--coral);
+  box-shadow: 0 0 16px var(--coral-glow);
+}
+.wf-col.done .wf-node {
+  border-color: var(--coral);
+  color: var(--coral);
+  background: rgba(224, 122, 95, 0.12);
+}
+
+.wf-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 10px;
+  min-height: 84px;
+  text-align: left;
+  transition: all .3s ease;
+}
+.wf-col.active .wf-card {
+  border-color: rgba(224, 122, 95, 0.4);
+  background: rgba(224, 122, 95, 0.05);
+}
+.wf-card h4 {
+  font-size: clamp(12.5px, 1.05vw, 14.5px);
+  margin-bottom: 4px;
+}
+.wf-col.active .wf-card h4 {
+  color: var(--coral-light);
+}
+.wf-card p {
+  font-size: clamp(11px, .9vw, 13px);
+  line-height: 1.35;
+  color: var(--mu);
+}
+
+.who-tag {
+  font: 600 11px var(--mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Metric / Dataset numbers: clean tabular sans-serif */
+.stat-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: clamp(18px, 2.2vw, 26px);
+}
+.stat-tag {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--coral);
+  margin-bottom: 8px;
+}
+.stat-num {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(40px, 4.8vw, 68px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  margin-bottom: 10px;
+}
+.stat-desc {
+  font-size: clamp(12.5px, 1.05vw, 14.5px);
+  line-height: 1.45;
+  color: var(--mu);
+}
+
+/* Flow Chips */
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.flow span {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 7px 13px;
+  border-radius: 8px;
+  font-size: clamp(11.5px, 1vw, 14px);
+  font-weight: 500;
+  color: var(--fg);
+}
+.flow em {
+  color: var(--coral);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* Progress Bars */
+.bar {
+  display: grid;
+  grid-template-columns: minmax(130px, 14vw) 1fr 4ch;
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(12.5px, 1.05vw, 15px);
+  margin: clamp(4px, .7vh, 8px) 0;
+}
+.bar span { color: var(--fg); font-weight: 500; }
+.bar div {
+  height: 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.bar div i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--coral);
+  border-radius: 6px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1) .4s;
+}
+.on .bar div i { width: var(--w); }
+.bar b {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 13px;
+  text-align: right;
+  color: var(--coral-light);
+}
+
+/* Formula Callout Boxes */
+.formula-card {
+  background: linear-gradient(135deg, rgba(224, 122, 95, 0.09) 0%, rgba(20, 20, 24, 0.9) 100%);
+  border: 1px solid rgba(224, 122, 95, 0.35);
+  box-shadow: 0 0 24px rgba(224, 122, 95, 0.08);
+  border-radius: 14px;
+  padding: clamp(14px, 1.8vw, 22px);
+  position: relative;
+  overflow: hidden;
+}
+.formula-card:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--coral);
+}
+.math-display {
+  font-family: var(--mono);
+  font-size: clamp(12.5px, 1.15vw, 16px);
+  line-height: 1.6;
+  color: #fff;
+  letter-spacing: -0.01em;
+  padding: 8px 0;
+  overflow-x: auto;
+}
+.math-display b { color: var(--coral-light); font-weight: 600; }
+
+.citation-box {
+  background: var(--card-inner);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 10px;
+}
+.citation-box p {
+  font-size: clamp(11px, .9vw, 13px);
+  line-height: 1.45;
+  color: var(--mu);
+}
+.citation-box b {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* Header & Controls Overlay */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--coral), var(--coral-light));
+  z-index: 100;
+  transition: width .35s ease;
+}
+
+.top-bar {
+  position: fixed;
+  top: clamp(16px, 2.5vh, 28px);
+  left: clamp(28px, 6.5vw, 88px);
+  right: clamp(28px, 6.5vw, 88px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50;
+  pointer-events: none;
+}
+.brand-label {
+  font: 600 13px var(--mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--mu);
+  pointer-events: auto;
+}
+.page-badge {
+  pointer-events: auto;
+  font: 500 13px var(--mono);
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.page-badge span#ct-current { color: var(--coral-light); font-weight: 600; }
+
+.nav-controls {
+  position: fixed;
+  bottom: clamp(16px, 2.5vh, 28px);
+  right: clamp(28px, 6.5vw, 88px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: rgba(20, 20, 24, 0.7);
+  backdrop-filter: blur(10px);
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--coral);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.nav-btn:active {
+  transform: translateY(0);
+}
+.nav-hint {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  margin-right: 6px;
+  pointer-events: none;
+}
+
+.foot-label {
+  position: fixed;
+  bottom: clamp(16px, 2.5vh, 28px);
+  left: clamp(28px, 6.5vw, 88px);
+  z-index: 50;
+  font-size: 12px;
+  color: var(--faint);
+  font-family: var(--mono);
+  pointer-events: none;
+}
+
+/* Team Slide Styling */
+.team-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: clamp(18px, 2.4vw, 32px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+}
+.team-badge {
+  display: inline-block;
+  font: 600 11px var(--mono);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+.team-names {
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 600;
+  color: var(--fg);
+  line-height: 1.3;
+}
+.team-names span {
+  display: block;
+}
+.team-members-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.team-member-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: clamp(13px, 1.1vw, 15px);
+  font-weight: 500;
+  color: var(--fg);
+}
+.team-member-pill b {
+  color: var(--coral-light);
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+.team-deliverables {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.team-deliverables li {
+  font-size: clamp(12px, 1vw, 14px);
+  color: var(--mu);
+  line-height: 1.45;
+  position: relative;
+  padding-left: 14px;
+}
+.team-deliverables li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--coral);
+}
+
+@media (max-width: 860px) {
+  .g2, .g3 { grid-template-columns: 1fr; }
+  .lane-wrap { grid-template-columns: 1fr; }
+  .lane-track { display: none; }
+  .nav-hint { display: none; }
+  .s { overflow-y: auto; justify-content: flex-start; padding-top: 70px; padding-bottom: 70px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .r { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- Top Branding & Slide Counter -->
+<div class="top-bar">
+  <span class="brand-label">HireSense</span>
+  <div class="page-badge">
+    <span id="ct-current">01</span> / <span id="ct-total">10</span>
+  </div>
+</div>
+
+<!-- Bottom Navigation Controls -->
+<div class="foot-label">HireSense · Evidence-Based Recruitment Platform</div>
+<div class="nav-controls">
+  <span class="nav-hint">Use ← → keys</span>
+  <button class="nav-btn" onclick="handleNav(-1)" aria-label="Previous slide">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </button>
+  <button class="nav-btn" onclick="handleNav(1)" aria-label="Next slide">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<!-- ==========================================
+     1. INTRO
+=========================================== -->
+<section class="s on">
+  <p class="k r">Project Presentation · 2026</p>
+  <h1 class="r">Hire on <u class="d">evidence</u>,<br>not guesswork.</h1>
+  <p class="lede r"><b>HireSense</b> is an end-to-end AI-assisted recruitment platform. Candidates upload a resume and complete an AI-guided interview. Recruiters receive an explainable, audited report instead of an arbitrary black-box score.</p>
+  <div class="r" style="margin-top:6px">
+    <span class="chip"><span class="chip-dot"></span> 6-Factor Resume Scoring</span>
+    <span class="chip"><span class="chip-dot"></span> Multilingual AI Voice Interview</span>
+    <span class="chip"><span class="chip-dot"></span> Verbatim Evidence Attribution</span>
+    <span class="chip"><span class="chip-dot"></span> Human Makes the Final Decision</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     2. PROBLEM
+=========================================== -->
+<section class="s">
+  <p class="k r">The Challenge</p>
+  <h2 class="r">Hiring is slow, opaque,<br>and difficult to scale.</h2>
+  <div>
+    <div class="row r">
+      <b>01</b>
+      <p>Manual resume triage creates severe bottlenecks. <span>Recruiters spend seconds skimming hundreds of resumes; qualified candidates are regularly overlooked under time pressure.</span></p>
+    </div>
+    <div class="row r">
+      <b>02</b>
+      <p>Keyword-matching ATS filters operate as black boxes. <span>Candidates cannot determine why they were screened out, and filters fail to parse valid technical aliases (e.g., "JS" vs. "JavaScript").</span></p>
+    </div>
+    <div class="row r">
+      <b>03</b>
+      <p>Initial screening calls consume massive engineering hours. <span>Every candidate requires human interview scheduling, yet evaluations remain subjective and inconsistent across interviewers.</span></p>
+    </div>
+    <div class="row r" style="border-bottom:none">
+      <b>04</b>
+      <p>Rejections arrive without actionable rationale. <span>Job seekers receive generic rejections with zero guidance on missing technical proficiencies or experiential gaps.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     3. SOLUTION
+=========================================== -->
+<section class="s">
+  <p class="k r">Platform Architecture</p>
+  <h2 class="r">One unified workflow.<br>Every metric links to proof.</h2>
+  <div class="grid g3">
+    <div class="card r">
+      <h3 style="color:var(--coral);margin-bottom:8px">01 Match</h3>
+      <p>The job description transforms into a typed requirement matrix. The uploaded resume is parsed, normalizing skills and tying every score to verbatim text spans in the resume.</p>
+    </div>
+    <div class="card r">
+      <h3 style="color:var(--coral);margin-bottom:8px">02 Screen</h3>
+      <p>A transparent, configurable threshold score filters candidate pools. Recruiters retain manual override power, with every override logged alongside an audit rationale.</p>
+    </div>
+    <div class="card r">
+      <h3 style="color:var(--coral);margin-bottom:8px">03 Interview</h3>
+      <p>Mira, an AI conversational interviewer, conducts rubric-governed voice sessions tailored to role requirements and the candidate's exact project claims, asking targeted follow-ups.</p>
+    </div>
+  </div>
+  <p class="sm r" style="margin-top:4px"><b>Guiding Principle:</b> AI performs the evidence-grounded first pass and exposes its reasoning. Human hiring teams make all final employment decisions.</p>
+</section>
+
+<!-- ==========================================
+     4. WORKFLOW (Interactive via Arrow Keys)
+=========================================== -->
+<section class="s">
+  <div class="wf-header-row r">
+    <div>
+      <p class="k">Interactive Workflow</p>
+      <h2>End-to-end recruitment journey</h2>
+    </div>
+    <div class="wf-indicator">
+      <span>Stage <b id="wf-cur">1</b> of 5 · <span id="wf-title" style="font-weight:600">Profile & Role Setup</span></span>
+      <div class="wf-dots">
+        <div class="wf-dot active" onclick="setWorkflowStep(0)"></div>
+        <div class="wf-dot" onclick="setWorkflowStep(1)"></div>
+        <div class="wf-dot" onclick="setWorkflowStep(2)"></div>
+        <div class="wf-dot" onclick="setWorkflowStep(3)"></div>
+        <div class="wf-dot" onclick="setWorkflowStep(4)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="r" style="position:relative">
+    <span class="who-tag">Student Journey</span>
+    <div class="lane-wrap" id="wf-lane-student">
+      <div class="lane-track"><div class="lane-track-fill" id="wf-line-fill"></div></div>
+      <!-- Step 0 -->
+      <div class="wf-col active" onclick="setWorkflowStep(0)">
+        <div class="wf-node">01</div>
+        <div class="wf-card">
+          <h4>Create Profile</h4>
+          <p>Register student profile, specify career interests, and link verified portfolios.</p>
+        </div>
+      </div>
+      <!-- Step 1 -->
+      <div class="wf-col future" onclick="setWorkflowStep(1)">
+        <div class="wf-node">02</div>
+        <div class="wf-card">
+          <h4>Browse Jobs</h4>
+          <p>Filter open listings with transparent criteria, target seniority, and tech stack.</p>
+        </div>
+      </div>
+      <!-- Step 2 -->
+      <div class="wf-col future" onclick="setWorkflowStep(2)">
+        <div class="wf-node">03</div>
+        <div class="wf-card">
+          <h4>Upload Resume</h4>
+          <p>Submit PDF/DOCX. Parser extracts skills, career history, and project evidence.</p>
+        </div>
+      </div>
+      <!-- Step 3 -->
+      <div class="wf-col future" onclick="setWorkflowStep(3)">
+        <div class="wf-node">04</div>
+        <div class="wf-card">
+          <h4>Review Fit Score</h4>
+          <p>Inspect transparent score breakdown with matched evidence and identified gaps.</p>
+        </div>
+      </div>
+      <!-- Step 4 -->
+      <div class="wf-col future" onclick="setWorkflowStep(4)">
+        <div class="wf-node">05</div>
+        <div class="wf-card">
+          <h4>AI Voice Interview</h4>
+          <p>Engage in adaptive multilingual interview with Mira and receive report.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="r" style="position:relative">
+    <span class="who-tag">Recruiter Journey</span>
+    <div class="lane-wrap" id="wf-lane-recruiter">
+      <!-- Step 0 -->
+      <div class="wf-col active" onclick="setWorkflowStep(0)">
+        <div class="wf-card">
+          <h4>Post Role</h4>
+          <p>Define mandatory skills, preferred qualifications, and custom interview rubrics.</p>
+        </div>
+      </div>
+      <!-- Step 1 -->
+      <div class="wf-col future" onclick="setWorkflowStep(1)">
+        <div class="wf-card">
+          <h4>Profile Extraction</h4>
+          <p>System transforms job posting into a structured Requirement Profile matrix.</p>
+        </div>
+      </div>
+      <!-- Step 2 -->
+      <div class="wf-col future" onclick="setWorkflowStep(2)">
+        <div class="wf-card">
+          <h4>Ranked Ingestion</h4>
+          <p>Incoming resumes are embedded, evaluated, and ranked with evidence attribution.</p>
+        </div>
+      </div>
+      <!-- Step 3 -->
+      <div class="wf-col future" onclick="setWorkflowStep(3)">
+        <div class="wf-card">
+          <h4>Shortlist Pool</h4>
+          <p>Screen via configurable threshold score with full audit tracking for overrides.</p>
+        </div>
+      </div>
+      <!-- Step 4 -->
+      <div class="wf-col future" onclick="setWorkflowStep(4)">
+        <div class="wf-card">
+          <h4>Audit & Offer</h4>
+          <p>Inspect AI interview scores, review transcript evidence, and make the hiring call.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="sm r" style="margin-top:2px"><b>Navigation:</b> Press the <b>Right Arrow (→)</b> to step through the workflow stages. Both candidate and recruiter paths synchronize seamlessly.</p>
+</section>
+
+<!-- ==========================================
+     5. DATASETS
+=========================================== -->
+<section class="s">
+  <p class="k r">Curated Datasets</p>
+  <h2 class="r">Three datasets power the platform</h2>
+  <div class="grid g3">
+    <div class="stat-box r">
+      <p class="stat-tag">Company_Data.csv</p>
+      <div class="stat-num">8,111</div>
+      <p class="stat-desc">Company-tagged technical and behavioral interview questions across 20 specialized domains and 33 enterprise organizations. Features full schema: question, domain, company.</p>
+    </div>
+    <div class="stat-box r">
+      <p class="stat-tag">train_data.jsonl</p>
+      <div class="stat-num">6,932</div>
+      <p class="stat-desc">Curated instruction-response question generation pairs (e.g., "Generate a Senior Data Engineer systems design prompt") powering Mira's contextual interview planner.</p>
+    </div>
+    <div class="stat-box r">
+      <p class="stat-tag">Brand & Institution Assets</p>
+      <div class="stat-num">50</div>
+      <p class="stat-desc">Verified SVG/PNG branding assets (29 technology companies and 21 accredited universities) enabling instant visual legibility across job listings and candidate profiles.</p>
+    </div>
+  </div>
+  
+  <p class="k r" style="margin-top:6px">Data Preprocessing Pipeline Applied to Questions</p>
+  <div class="flow r">
+    <span>Sanitize quotes & whitespace</span>
+    <em>→</em>
+    <span>Normalize sentence casing & punctuation</span>
+    <em>→</em>
+    <span>Prune stopwords, retain 8 domain keywords</span>
+    <em>→</em>
+    <span>Phase tagging: intro, technical, scenario, closing</span>
+    <em>→</em>
+    <span>Map to 8 core job profiles</span>
+    <em>→</em>
+    <span>Attach rubric hints & model answers</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     6. RESUME SCORING (Math formulation + Worked Example + Citations)
+=========================================== -->
+<section class="s">
+  <p class="k r">Resume Fit Scoring Engine</p>
+  <h2 class="r">Six weighted dimensions make one match score.</h2>
+  <div class="grid" style="grid-template-columns: 1.15fr 1fr; align-items: start; gap: clamp(14px, 2vw, 24px)">
+    
+    <!-- Left Column: Variable Math Formula & Weights -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="formula-card r">
+        <p class="k" style="margin-bottom:6px">Mathematical Formulation</p>
+        <div class="math-display">
+          <b>S<sub>match</sub></b> = &sum;<sub>i=1</sub><sup>6</sup> (w<sub>i</sub> &times; S<sub>i</sub>)<br>
+          <span style="color:var(--mu);font-size:0.92em;display:inline-block;margin-top:4px">
+          = (w<sub>skill</sub> &times; S<sub>skill</sub>) + (w<sub>exp</sub> &times; S<sub>exp</sub>) + (w<sub>proj</sub> &times; S<sub>proj</sub>)<br>
+          &nbsp;&nbsp;+ (w<sub>edu</sub> &times; S<sub>edu</sub>) + (w<sub>resp</sub> &times; S<sub>resp</sub>) + (w<sub>evid</sub> &times; S<sub>evid</sub>)
+          </span>
+        </div>
+        <p class="sm" style="margin-top:6px;color:var(--fg);font-size:12.5px">
+          <b>Constraint:</b> &sum; w<sub>i</sub> = 1.00 &nbsp;|&nbsp; <b>Weights:</b> [0.40, 0.20, 0.15, 0.10, 0.10, 0.05]
+        </p>
+      </div>
+
+      <div class="r" id="B1"></div>
+
+      <p class="sm r" style="font-size:12px;color:var(--mu);line-height:1.45">
+        <b>Pre-scoring normalization:</b> Technical aliases are resolved prior to embedding (e.g., <code>JS</code> &rarr; <code>JavaScript</code>, <code>Postgres</code> &rarr; <code>PostgreSQL</code>). Mandatory qualifications operate as strict verification gates, preventing score dilution.
+      </p>
+    </div>
+
+    <!-- Right Column: Worked Numerical Example & Citations -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card r" style="border-color:rgba(255,255,255,0.12)">
+        <h4 style="margin-bottom:8px">Worked Calculation Example</h4>
+        <div class="math-display" style="font-size:13px;line-height:1.75;background:var(--card-inner);padding:10px 14px;border-radius:8px">
+          <span style="color:var(--mu)">Given sample component scores:</span><br>
+          S<sub>skill</sub>=80, S<sub>exp</sub>=70, S<sub>proj</sub>=75, S<sub>edu</sub>=90, S<sub>resp</sub>=60, S<sub>evid</sub>=50<br>
+          S<sub>match</sub> = (0.40 &times; 80) + (0.20 &times; 70) + (0.15 &times; 75)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ (0.10 &times; 90) + (0.10 &times; 60) + (0.05 &times; 50)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 32.0 + 14.0 + 11.25 + 9.0 + 6.0 + 2.5<br>
+          <b style="color:var(--coral);font-size:1.15em">&rarr; S<sub>match</sub> = 74.75 &approx; 75 / 100</b>
+        </div>
+      </div>
+
+      <div class="citation-box r">
+        <p class="k" style="margin-bottom:6px;font-size:10.5px">Theoretical Basis & Citations</p>
+        <p><b>[1] Bian et al. (2020)</b> — <i>Learning to Match Jobs with Resumes from Sparse Interaction Data using Multi-View Co-Teaching Network</i> (arXiv:2009.13299). Multi-view semantic alignment across skill, experience, and role dimensions.</p>
+        <p style="margin-top:6px"><b>[2] Yu, Zhang, & Yu (RecSys 2024)</b> — <i>ConFit: Improving Resume-Job Matching using Data Augmentation and Contrastive Learning</i>. Contrastive asymmetric embedding of job requirements and candidate profile spans.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ==========================================
+     7. AI INTERVIEW
+=========================================== -->
+<section class="s">
+  <p class="k r">Conversational AI Engine</p>
+  <h2 class="r">Meet Mira, the AI interviewer</h2>
+  <p class="lede r">Questions are synthesized dynamically from the job profile and the candidate's verified resume deliverables. Mira conducts natural dialogue across English, Hindi, and code-mixed modes.</p>
+  
+  <div class="flow r" style="margin:4px 0">
+    <span>1. Introduction</span><em>&rarr;</em>
+    <span>2. Resume Verification</span><em>&rarr;</em>
+    <span>3. Technical Core</span><em>&rarr;</em>
+    <span>4. System / Project</span><em>&rarr;</em>
+    <span>5. Situational</span><em>&rarr;</em>
+    <span>6. Dynamic Follow-Up</span><em>&rarr;</em>
+    <span>7. Wrap-up</span>
+  </div>
+
+  <div class="grid g3">
+    <div class="card r">
+      <h4 style="margin-bottom:6px">1 · Spoken Voice Ingestion</h4>
+      <p>Candidate audio is captured in real-time and transcribed via a multilingual speech-to-text pipeline supporting Indian English, Hindi, and colloquial code-mixed speech.</p>
+    </div>
+    <div class="card r">
+      <h4 style="margin-bottom:6px">2 · Rubric-Grounded Scoring</h4>
+      <p>The reasoning LLM evaluates the transcript against a 6-factor standardized rubric. Superficial or evasive responses automatically trigger focused follow-up inquiries.</p>
+    </div>
+    <div class="card r">
+      <h4 style="margin-bottom:6px">3 · Deterministic Code Control</h4>
+      <p>While the model crafts wording, deterministic software regulates question pacing, session transitions, and duration limits. Vision proctoring logs discrete events without judging "honesty".</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     8. EVALUATION & COMPOSITE SCORE (Highlighted Formula + File References)
+=========================================== -->
+<section class="s">
+  <p class="k r">Evaluation and Composite Scoring</p>
+  <h2 class="r">How each answer and candidate is scored</h2>
+  
+  <div class="grid g2" style="align-items:start;gap:clamp(16px, 2.2vw, 28px)">
+    
+    <!-- Left Column: Rubric Bars & Highlighted Formula -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="r">
+        <p class="sm" style="font-weight:600;color:var(--fg);margin-bottom:8px">Interview Rubric Weights (Evaluated Per Answer)</p>
+        <div id="B2"></div>
+      </div>
+
+      <!-- Prominently Highlighted Dynamic Composite Formula -->
+      <div class="formula-card r">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <p class="k">Dynamic Composite Score Formula</p>
+          <span class="file-tag">src/lib/scoring.ts</span>
+        </div>
+        <div class="math-display" style="display:flex;align-items:center;gap:10px;padding:8px 0;flex-wrap:wrap">
+          <span style="font-weight:600;color:var(--coral-light)">Composite Score</span>
+          <span>=</span>
+          <div style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px">
+            <span style="border-bottom:1.5px solid rgba(255,255,255,0.7);padding:0 6px 2px">&sum;<sub>i &isin; &Uscr;</sub> (w<sub>i</sub> &times; s<sub>i</sub>)</span>
+            <span style="padding-top:2px">&sum;<sub>i &isin; &Uscr;</sub> w<sub>i</sub></span>
+          </div>
+          <span>&times; 100</span>
+        </div>
+        <p class="sm" style="color:var(--mu);margin-top:4px">
+          Where <b>&Uscr;</b> represents the set of applicable, non-null rubric dimensions. If a dimension is omitted (e.g. no behavioral component in a pure coding question), the weights automatically re-normalize across active components so candidates are never penalized.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right Column: Metric Breakdown Cards with Explicit File References -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      
+      <!-- Card 1 -->
+      <div class="card r">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <h4>From Answers to a Verdict</h4>
+          <span class="file-tag">src/lib/scoring.ts</span>
+        </div>
+        <p style="margin-top:6px">
+          The candidate's overall score is the rounded arithmetic mean of all question composite scores. Thresholds defined in <code>SCORE_THRESHOLDS</code>:
+        </p>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <span class="chip" style="margin:0;font-size:12px"><b style="color:#4ade80">&ge; 75</b> &nbsp;Strong Fit</span>
+          <span class="chip" style="margin:0;font-size:12px"><b style="color:#facc15">50 &ndash; 74</b> &nbsp;Moderate Fit</span>
+          <span class="chip" style="margin:0;font-size:12px"><b style="color:#f87171">&lt; 50</b> &nbsp;Developing Fit</span>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card r">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <h4>Resume Matching Metrics Tracked</h4>
+          <span class="file-tag">src/lib/ai-analyzer.ts</span>
+        </div>
+        <p style="margin-top:6px">
+          Evaluated via <code>document-parser.ts</code> and <code>AI/alias_normalization.py</code>: Skill-extraction F1 score, requirement precision/recall, normalized discounted cumulative gain (nDCG), and zero-tolerance false-positive gating on mandatory skills.
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card r">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <h4>Interview & Speech Telemetry</h4>
+          <span class="file-tag">src/lib/ai-interview.ts</span>
+        </div>
+        <p style="margin-top:6px">
+          Tracked via <code>interview-planner.ts</code> and <code>useMiraSpeech.ts</code>: Word Error Rate (WER) across Indic languages and code-mixing, rubric inter-rater agreement with blind raters, end-to-end question latency, and token cost per interview.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ==========================================
+     9. TEAM CONTRIBUTIONS (Enhanced typography + Samanyu Khanna)
+=========================================== -->
+<section class="s">
+  <p class="k r">Team Architecture & Ownership</p>
+  <h2 class="r">Who built what</h2>
+  
+  <div class="grid g2" style="margin-top:4px">
+    
+    <!-- Part 1: Ayush Tiwari & Yuvraj Pathania -->
+    <div class="team-card r">
+      <div>
+        <span class="team-badge">Module 01</span>
+        <h3 style="margin:8px 0 14px">Resume Fit Engine & Database Pipeline</h3>
+        
+        <p class="sm" style="color:var(--mu);margin-bottom:10px">Core Contributors:</p>
+        <div class="team-members-list">
+          <div class="team-member-pill">
+            <b>AT</b> Ayush Tiwari
+          </div>
+          <div class="team-member-pill">
+            <b>YP</b> Yuvraj Pathania
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="k" style="font-size:10.5px;margin-bottom:8px">Key Deliverables & Responsibilities</p>
+        <ul class="team-deliverables">
+          <li><b>Mathematical scoring formula:</b> 6-factor weighted resume matching with alias normalization.</li>
+          <li><b>Requirement extraction:</b> Parsing job postings into structured requirement checklists with evidence quotation spans.</li>
+          <li><b>Dataset engineering:</b> Sourcing, cleaning, and preprocessing <code>Company_Data.csv</code> and <code>train_data.jsonl</code>.</li>
+          <li><b>Platform assets:</b> Preprocessing 50+ company and university brand logos and database models.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Part 2: Varnit Agustya & Samanyu Khanna -->
+    <div class="team-card r">
+      <div>
+        <span class="team-badge">Module 02</span>
+        <h3 style="margin:8px 0 14px">AI Interviewer, Screening & Telemetry</h3>
+        
+        <p class="sm" style="color:var(--mu);margin-bottom:10px">Core Contributors:</p>
+        <div class="team-members-list">
+          <div class="team-member-pill">
+            <b>VA</b> Varnit Agustya
+          </div>
+          <div class="team-member-pill">
+            <b>SK</b> Samanyu Khanna
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="k" style="font-size:10.5px;margin-bottom:8px">Key Deliverables & Responsibilities</p>
+        <ul class="team-deliverables">
+          <li><b>Mira interview flow:</b> 7-stage state machine controlling dynamic interview transitions and pacing.</li>
+          <li><b>Rubric evaluation engine:</b> Answer grading across 6 competencies with dynamic weight re-balancing.</li>
+          <li><b>Screening & verdict logic:</b> Fit thresholds (Strong, Moderate, Developing) with audited recruiter overrides.</li>
+          <li><b>Telemetry & speech evaluation:</b> Word error rate benchmarking, inter-rater reliability, and cost profiling.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ==========================================
+     10. CONCLUSION / THANK YOU
+=========================================== -->
+<section class="s" style="align-items:center;text-align:center">
+  <div style="max-width:760px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:18px">
+    <span class="chip r" style="background:rgba(224,122,95,0.1);border-color:rgba(224,122,95,0.3);color:var(--coral-light)">
+      HireSense · Early Access
+    </span>
+    <h1 class="r" style="font-size:clamp(44px,7.5vw,98px)">Thank you.</h1>
+    <p class="lede r" style="margin:0 auto">
+      Every score links to evidence. Every candidate gets a voice. People make every hiring decision.
+    </p>
+    <div class="r" style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <span class="chip">hiresense.online</span>
+      <span class="chip">Open for Q&A</span>
+    </div>
+  </div>
+</section>
+
+<script>
+// Slide deck state
+const S = [...document.querySelectorAll('.s')];
+let currentSlide = 0;
+let workflowStep = 0; // 0 to 4
+
+// Initialize animation delays
+S.forEach(s => s.querySelectorAll('.r').forEach((e, k) => e.style.setProperty('--i', k)));
+
+// Bar chart helper
+const renderBars = (id, data) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = data.map(x => `
+    <div class="bar">
+      <span>${x[0]}</span>
+      <div><i style="--w:${(x[1] / x[2]) * 100}%"></i></div>
+      <b>${x[1]}%</b>
+    </div>
+  `).join('');
+};
+
+// Render B1 (Resume weights) and B2 (Interview rubric)
+renderBars('B1', [
+  ["Skill Match", 40, 40],
+  ["Experience Fit", 20, 40],
+  ["Project Relevance", 15, 40],
+  ["Education Fit", 10, 40],
+  ["Responsibilities", 10, 40],
+  ["Evidence Quality", 5, 40]
+]);
+
+renderBars('B2', [
+  ["Technical Correctness", 35, 35],
+  ["Problem Solving", 20, 35],
+  ["Project Understanding", 15, 35],
+  ["Relevance", 10, 35],
+  ["Communication", 10, 35],
+  ["Behavioural Evidence", 10, 35]
+]);
+
+// Workflow stage definitions
+const WF_STAGES = [
+  "Profile & Role Setup",
+  "Job Ingestion & Parsing",
+  "Resume & Semantic Match",
+  "Screening & Verification",
+  "Mira AI Voice Interview & Verdict"
+];
+
+function updateWorkflowUI() {
+  const studentCols = document.querySelectorAll('#wf-lane-student .wf-col');
+  const recruiterCols = document.querySelectorAll('#wf-lane-recruiter .wf-col');
+  
+  [studentCols, recruiterCols].forEach(cols => {
+    cols.forEach((col, idx) => {
+      col.classList.toggle('active', idx === workflowStep);
+      col.classList.toggle('done', idx < workflowStep);
+      col.classList.toggle('future', idx > workflowStep);
+    });
+  });
+
+  const fill = document.getElementById('wf-line-fill');
+  if (fill) fill.style.width = (workflowStep / 4 * 100) + '%';
+
+  const curNum = document.getElementById('wf-cur');
+  if (curNum) curNum.textContent = workflowStep + 1;
+
+  const curTitle = document.getElementById('wf-title');
+  if (curTitle && WF_STAGES[workflowStep]) curTitle.textContent = WF_STAGES[workflowStep];
+
+  const dots = document.querySelectorAll('.wf-dot');
+  dots.forEach((dot, idx) => {
+    dot.classList.toggle('active', idx === workflowStep);
+    dot.classList.toggle('done', idx < workflowStep);
+  });
+}
+
+function setWorkflowStep(step) {
+  workflowStep = Math.max(0, Math.min(4, step));
+  updateWorkflowUI();
+}
+
+// Navigation controller
+function go(n) {
+  n = Math.max(0, Math.min(S.length - 1, n));
+  S.forEach((s, idx) => s.classList.toggle('on', idx === n));
+  currentSlide = n;
+
+  // Update top right page counter
+  document.getElementById('ct-current').textContent = String(n + 1).padStart(2, '0');
+  document.getElementById('ct-total').textContent = String(S.length).padStart(2, '0');
+
+  // Update top progress bar
+  document.getElementById('progress-bar').style.width = ((n + 1) / S.length * 100) + '%';
+  history.replaceState(null, '', '#' + (n + 1));
+}
+
+// Unified step-aware navigation handler
+function handleNav(delta) {
+  // If on Slide 4 (workflow, index 3), step through stages first
+  if (currentSlide === 3) {
+    if (delta > 0 && workflowStep < 4) {
+      setWorkflowStep(workflowStep + 1);
+      return;
+    }
+    if (delta < 0 && workflowStep > 0) {
+      setWorkflowStep(workflowStep - 1);
+      return;
+    }
+  }
+
+  // Slide transition
+  const target = currentSlide + delta;
+  if (target >= 0 && target < S.length) {
+    // If entering workflow slide from left, start at step 0
+    if (target === 3 && delta > 0) {
+      setWorkflowStep(0);
+    }
+    // If entering workflow slide from right, start at step 4
+    if (target === 3 && delta < 0) {
+      setWorkflowStep(4);
+    }
+    go(target);
+  }
+}
+
+// Keyboard controls
+addEventListener('keydown', e => {
+  if (['ArrowRight', 'PageDown', ' '].includes(e.key)) {
+    e.preventDefault();
+    handleNav(1);
+  } else if (['ArrowLeft', 'PageUp'].includes(e.key)) {
+    e.preventDefault();
+    handleNav(-1);
+  } else if (e.key === 'Home') {
+    e.preventDefault();
+    go(0);
+  } else if (e.key === 'End') {
+    e.preventDefault();
+    go(S.length - 1);
+  }
+});
+
+// Touch gesture support
+let touchStartX = 0;
+addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+addEventListener('touchend', e => {
+  const deltaX = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(deltaX) > 50) {
+    handleNav(deltaX < 0 ? 1 : -1);
+  }
+}, { passive: true });
+
+// Initial load & hash change listener
+window.addEventListener('hashchange', () => {
+  const h = parseInt(location.hash.slice(1)) || 1;
+  go(h - 1);
+});
+const initialHash = parseInt(location.hash.slice(1)) || 1;
+go(initialHash - 1);
+updateWorkflowUI();
+</script>
+</body>
+</html>
