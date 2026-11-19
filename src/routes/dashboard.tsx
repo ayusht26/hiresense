@@ -122,6 +122,9 @@ function DashboardPage() {
         }
 
         setProfile(userProfile);
+        if (typeof window !== "undefined" && userProfile.full_name) {
+          localStorage.setItem("hiresense_profile_name", userProfile.full_name);
+        }
       } catch (err) {
         console.error("Dashboard profile load error:", err);
         navigate({ to: "/login" });

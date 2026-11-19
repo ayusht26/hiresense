@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Video,
   Languages,
@@ -6,10 +6,8 @@ import {
   Sparkles,
   CheckCircle2,
   Clock,
-  AlertCircle,
 } from "lucide-react";
 import { AiInterviewRoom } from "@/components/interview/AiInterviewRoom";
-import { useMediaSession } from "@/hooks/useMediaSession";
 import { recordConsentAndLanguage } from "@/lib/applications";
 import type { PlanContext } from "@/lib/interview-planner";
 
@@ -39,22 +37,9 @@ export function InterviewLaunchCard({
   );
   const [isInterviewOpen, setIsInterviewOpen] = useState(false);
 
-  const { isAcquired, permissionStatus, error: mediaError, acquire } = useMediaSession();
-
-  // Pre-check / acquire permissions on mount silently
-  useEffect(() => {
-    acquire().catch(() => {});
-  }, [acquire]);
-
-  const handleStart = async () => {
+  const handleStart = () => {
     // Record consent and language in persistence
     recordConsentAndLanguage(userId, jobId, selectedLanguage);
-
-    // Acquire stream if not already acquired
-    if (!isAcquired) {
-      await acquire().catch(() => {});
-    }
-
     setIsInterviewOpen(true);
   };
 
@@ -87,26 +72,6 @@ export function InterviewLaunchCard({
             <ArrowRight size={16} />
           </button>
         </div>
-
-        {/* Media permission warning if denied */}
-        {permissionStatus === "denied" && (
-          <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.10)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13px]">
-            <div className="flex items-center gap-2.5 text-[#8a8a8a]">
-              <AlertCircle size={16} className="text-[#f5f5f5] shrink-0" />
-              <span>
-                Camera or microphone access is blocked in your browser settings. Please enable
-                camera and microphone permissions to proceed with voice/video.
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => acquire()}
-              className="inline-flex h-8 items-center px-4 rounded-full bg-[#141414] border border-[rgba(255,255,255,0.12)] text-[12px] font-[600] text-[#f5f5f5] hover:bg-[#262626] transition-colors shrink-0"
-            >
-              Try again
-            </button>
-          </div>
-        )}
 
         {/* Interview Configuration Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -145,13 +110,8 @@ export function InterviewLaunchCard({
                 <CheckCircle2 size={13} />
                 <span>Mira AI Ready</span>
               </span>
-              <span
-                className={`inline-flex items-center gap-1.5 ${
-                  isAcquired ? "text-emerald-400" : "text-[#8a8a8a]"
-                }`}
-              >
-                <CheckCircle2 size={13} />
-                <span>{isAcquired ? "Webcam & Mic Connected" : "Permission Standby"}</span>
+              <span className="inline-flex items-center gap-1.5 text-[#8a8a8a]">
+                <span>Webcam & mic checked in pre-session lobby</span>
               </span>
             </div>
           </div>

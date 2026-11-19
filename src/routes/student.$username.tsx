@@ -263,6 +263,9 @@ function StudentProfilePage() {
 
       const updated = data as Profile;
       setTargetProfile(updated);
+      if (typeof window !== "undefined" && trimmedName) {
+        localStorage.setItem("hiresense_profile_name", trimmedName);
+      }
       if (currentUser && currentUser.id === updated.id) {
         setCurrentUser(updated);
       }

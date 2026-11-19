@@ -12,8 +12,8 @@ import {
   ChevronRight,
   FileText,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import type { Job, StructuredJobListing } from "@/types/database.types";
+import { supabase, fetchUserProfile } from "@/lib/supabase";
+import type { Job, Profile, StructuredJobListing } from "@/types/database.types";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { TechLogoTile } from "@/components/TechLogoTile";
 import { ResumeUploadCard, type ResumeUploadData } from "@/components/analyzer/ResumeUploadCard";
@@ -164,6 +164,14 @@ function JobApplyPage() {
   const hasSavedResume = Boolean(immediateApp?.resume?.analysisResult);
 
   const [userId, setUserId] = useState<string>("guest_user");
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileName, setProfileName] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("hiresense_profile_name") || "";
+    }
+    return "";
+  });
+  const [profileEmail, setProfileEmail] = useState<string>("");
   const [job, setJob] = useState<Job>(DEMO_JOB_FALLBACK);
   const [jobLoading, setJobLoading] = useState(true);
   const [isInitialChecking, setIsInitialChecking] = useState<boolean>(!hasSavedResume);
@@ -224,10 +232,51 @@ function JobApplyPage() {
           setUserId(uid);
           recordJobOpened(uid, jobId);
 
+          let resolvedName = profileName;
+          let resolvedEmail = profileEmail;
+
+          if (user) {
+            try {
+              const userProfile = await fetchUserProfile(user.id);
+              if (userProfile) {
+                setProfile(userProfile);
+                if (userProfile.full_name?.trim()) {
+                  resolvedName = userProfile.full_name.trim();
+                }
+                if (userProfile.email?.trim()) {
+                  resolvedEmail = userProfile.email.trim();
+                }
+              }
+            } catch (err) {
+              console.warn("Could not fetch user profile:", err);
+            }
+
+            if (!resolvedName && user.user_metadata?.full_name?.trim()) {
+              resolvedName = user.user_metadata.full_name.trim();
+            }
+            if (!resolvedEmail && user.email?.trim()) {
+              resolvedEmail = user.email.trim();
+            }
+          }
+
+          if (resolvedName) {
+            setProfileName(resolvedName);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("hiresense_profile_name", resolvedName);
+            }
+          }
+          if (resolvedEmail) {
+            setProfileEmail(resolvedEmail);
+          }
+
           // Jump to furthest completed step if saved application exists
           const existingApp = getApplication(uid, jobId) || findApplicationForJob(jobId, uid);
           if (existingApp?.resume?.analysisResult) {
-            setAnalysisResult(existingApp.resume.analysisResult);
+            const savedAnalysis = existingApp.resume.analysisResult;
+            if (resolvedName && savedAnalysis.candidate_name !== resolvedName) {
+              savedAnalysis.candidate_name = resolvedName;
+            }
+            setAnalysisResult(savedAnalysis);
             setUploadedFileName(existingApp.resume.fileName);
             if (existingApp.language) {
               setPreferredLanguage(existingApp.language);
@@ -264,6 +313,11 @@ function JobApplyPage() {
     const t3 = setTimeout(() => setAnalyzingStep(3), 2800);
 
     try {
+      const effectiveCandidateName =
+        profileName || profile?.full_name || uploadData.candidateName || "Candidate";
+      const effectiveCandidateEmail =
+        profileEmail || profile?.email || uploadData.candidateEmail || "";
+
       const payload = {
         jobId: job.id,
         jobTitle: job.title,
@@ -272,8 +326,8 @@ function JobApplyPage() {
         resumeText: uploadData.resumeText,
         resumeBase64: uploadData.resumeBase64 || "",
         resumeFileName: uploadData.fileName,
-        candidateName: uploadData.candidateName,
-        candidateEmail: uploadData.candidateEmail,
+        candidateName: effectiveCandidateName,
+        candidateEmail: effectiveCandidateEmail,
         preferredLanguage: uploadData.preferredLanguage,
       };
 
@@ -286,9 +340,17 @@ function JobApplyPage() {
         result = analyzeResumeDeterministically(
           payload,
           uploadData.resumeText,
-          uploadData.candidateName || "Candidate",
-          uploadData.candidateEmail || "",
+          effectiveCandidateName,
+          effectiveCandidateEmail,
         );
+      }
+
+      // Ensure candidate name is locked to the profile name across
+      if (effectiveCandidateName && effectiveCandidateName !== "Candidate") {
+        result.candidate_name = effectiveCandidateName;
+      }
+      if (effectiveCandidateEmail) {
+        result.candidate_email = effectiveCandidateEmail;
       }
 
       // Record in client persistence store (Phase 2.1)
@@ -330,8 +392,8 @@ function JobApplyPage() {
           const reportPayload = {
             ...existingReport,
             ...(result as unknown as Record<string, unknown>),
-            candidate_name: result.candidate_name || uploadData.candidateName || user.email?.split("@")[0],
-            candidate_email: result.candidate_email || uploadData.candidateEmail || user.email,
+            candidate_name: effectiveCandidateName,
+            candidate_email: effectiveCandidateEmail || user.email,
             target_role: job.title,
             interview_scorecard: existingReport.interview_scorecard || undefined,
             overallScore: existingReport.overallScore || undefined,
@@ -469,6 +531,8 @@ function JobApplyPage() {
             isLoading={false}
             jobTitle={job.title}
             companyName={job.company_name}
+            candidateName={profileName || profile?.full_name || ""}
+            candidateEmail={profileEmail || profile?.email || ""}
           />
         ) : null}
 
@@ -542,14 +606,17 @@ function JobApplyPage() {
         )}
 
         {/* Dynamic State 3: Analysis Results Dashboard */}
-        {stage === "result" && analysisResult && (
+        {stage === "result" && analysisResult && (() => {
+          const effectiveCandidateName =
+            profileName || profile?.full_name || analysisResult.candidate_name || "Candidate";
+          return (
           <div className="space-y-8 animate-in fade-in duration-300">
             {/* Action Bar: Re-upload toggle */}
             <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-4 flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 <span className="text-[13px] font-[600] text-[#f5f5f5]">
-                  Analysis Complete for {analysisResult.candidate_name}
+                  Analysis Complete for {effectiveCandidateName}
                 </span>
                 {uploadedFileName && (
                   <span className="text-[12px] text-[#8a8a8a] flex items-center gap-1.5 bg-[#1a1a1a] px-2.5 py-0.5 rounded-full border border-[rgba(255,255,255,0.06)]">
@@ -578,7 +645,7 @@ function JobApplyPage() {
               fitLevel={analysisResult.fit_level}
               breakdown={analysisResult.score_breakdown}
               targetJobTitle={job.title}
-              candidateName={analysisResult.candidate_name}
+              candidateName={effectiveCandidateName}
               modelUsed={analysisResult.model_used}
             />
 
@@ -596,7 +663,7 @@ function JobApplyPage() {
             <InterviewLaunchCard
               userId={userId}
               jobId={job.id}
-              candidateName={analysisResult.candidate_name}
+              candidateName={effectiveCandidateName}
               targetJobTitle={job.title}
               jobPosting={memoizedJobPosting}
               preferredLanguage={preferredLanguage}
@@ -604,7 +671,8 @@ function JobApplyPage() {
               analysis={analysisResult}
             />
           </div>
-        )}
+          );
+        })()}
 
         {error && (
           <div className="rounded-[16px] bg-red-500/10 border border-red-500/30 p-4 text-[13px] text-red-400 text-center">

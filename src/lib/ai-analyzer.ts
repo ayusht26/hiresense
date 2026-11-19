@@ -428,7 +428,7 @@ export async function executeAiResumeAnalysis(
   const resolvedName =
     input.candidateName &&
     input.candidateName !== "Applicant" &&
-    input.candidateName !== "Aarav Sharma"
+    input.candidateName !== "Candidate"
       ? input.candidateName
       : detected.name || input.candidateName || "Candidate";
 
@@ -548,8 +548,10 @@ ${resumeContent.slice(0, 15000)}`;
               : parsed.overall_fit_percentage >= 50
                 ? "Moderate Fit"
                 : "Developing Fit";
-          // Ensure detected name is kept if LLM reverted to placeholder
-          if (parsed.candidate_name === "Aarav Sharma" && resolvedName !== "Aarav Sharma") {
+          // Ensure resolved candidate name is consistently kept
+          if (resolvedName && resolvedName !== "Candidate" && resolvedName !== "Applicant") {
+            parsed.candidate_name = resolvedName;
+          } else if (parsed.candidate_name === "Aarav Sharma" && resolvedName !== "Aarav Sharma") {
             parsed.candidate_name = resolvedName;
           }
           return parsed;
@@ -609,7 +611,9 @@ ${resumeContent.slice(0, 15000)}`;
                   : parsed.overall_fit_percentage >= 50
                     ? "Moderate Fit"
                     : "Developing Fit";
-              if (parsed.candidate_name === "Aarav Sharma" && resolvedName !== "Aarav Sharma") {
+              if (resolvedName && resolvedName !== "Candidate" && resolvedName !== "Applicant") {
+                parsed.candidate_name = resolvedName;
+              } else if (parsed.candidate_name === "Aarav Sharma" && resolvedName !== "Aarav Sharma") {
                 parsed.candidate_name = resolvedName;
               }
               return parsed;

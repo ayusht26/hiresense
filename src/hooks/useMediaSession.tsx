@@ -65,6 +65,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
 
   const streamRef = useRef<MediaStream | null>(null);
   const acquiringPromiseRef = useRef<Promise<MediaStream | null>>(null);
+  const hasRequestedStreamRef = useRef(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -165,6 +166,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
 
   const release = useCallback(() => {
     cleanupAudio();
+    hasRequestedStreamRef.current = false;
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
@@ -182,6 +184,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
   }, [cleanupAudio]);
 
   const acquire = useCallback(async (): Promise<MediaStream | null> => {
+    hasRequestedStreamRef.current = true;
     // If stream is already active and healthy, return it directly without prompting
     if (streamRef.current && streamRef.current.active) {
       const vTracks = streamRef.current.getVideoTracks();
@@ -398,7 +401,10 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     let micStatus: PermissionStatus | null = null;
 
     const handlePermissionChange = () => {
-      if (camStatus?.state === "granted" || micStatus?.state === "granted") {
+      if (
+        hasRequestedStreamRef.current &&
+        (camStatus?.state === "granted" || micStatus?.state === "granted")
+      ) {
         acquire().catch(() => {});
       }
     };
@@ -426,8 +432,11 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     }
 
     const handleWindowFocus = () => {
-      // Re-check and auto-acquire when user returns from browser address bar / settings
-      if (!streamRef.current || !streamRef.current.active) {
+      // Re-check and auto-acquire ONLY if user has already initiated media acquisition in interview
+      if (
+        hasRequestedStreamRef.current &&
+        (!streamRef.current || !streamRef.current.active)
+      ) {
         acquire().catch(() => {});
       }
     };

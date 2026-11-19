@@ -237,6 +237,10 @@ function SignupPage() {
         return;
       }
 
+      if (typeof window !== "undefined" && fullName.trim()) {
+        localStorage.setItem("hiresense_profile_name", fullName.trim());
+      }
+
       if (data.session) {
         // Direct session returned -> Proceed to step 3 (photo upload)
         navigate({ to: "/signup/photo" });

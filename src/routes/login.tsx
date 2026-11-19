@@ -36,6 +36,9 @@ function LoginPage() {
         } = await supabase.auth.getUser();
         if (user) {
           const profile = await fetchUserProfile(user.id);
+          if (profile?.full_name && typeof window !== "undefined") {
+            localStorage.setItem("hiresense_profile_name", profile.full_name);
+          }
           const role = user.app_metadata?.role || profile?.role || "student";
           if (role === "student" && !profile?.avatar_step_done) {
             navigate({ to: "/signup/photo" });
@@ -87,6 +90,9 @@ function LoginPage() {
 
               if (!setSessionErr && sessionData.user) {
                 const profile = await fetchUserProfile(sessionData.user.id);
+                if (profile?.full_name && typeof window !== "undefined") {
+                  localStorage.setItem("hiresense_profile_name", profile.full_name);
+                }
                 const role = sessionData.user.app_metadata?.role || profile?.role || "student";
                 const avatarDone = profile?.avatar_step_done ?? false;
 
@@ -123,6 +129,9 @@ function LoginPage() {
 
       // Fetch profile to check role and avatar_step_done
       const profile = await fetchUserProfile(authUser.id);
+      if (profile?.full_name && typeof window !== "undefined") {
+        localStorage.setItem("hiresense_profile_name", profile.full_name);
+      }
       const role = authUser.app_metadata?.role || profile?.role || "student";
       const avatarDone = profile?.avatar_step_done ?? false;
 

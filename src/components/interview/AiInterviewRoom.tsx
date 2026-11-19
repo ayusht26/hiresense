@@ -688,6 +688,7 @@ export function AiInterviewRoom({
   const handleClose = () => {
     cancelSpeech();
     recorder.cancelRecording();
+    release();
     onClose();
   };
 
