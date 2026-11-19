@@ -1345,7 +1345,7 @@ export function AiInterviewRoom({
                     target: 100,
                     color: scoreTone(scorecard.categories.technicalAccuracy).color,
                     colorEnd: scoreTone(scorecard.categories.technicalAccuracy).color,
-                    size: 200,
+                    size: 204,
                     description:
                       "Grounded technical depth, core stack mechanisms, and architecture",
                   },
@@ -1355,7 +1355,7 @@ export function AiInterviewRoom({
                     target: 100,
                     color: scoreTone(scorecard.categories.communicationClarity).color,
                     colorEnd: scoreTone(scorecard.categories.communicationClarity).color,
-                    size: 160,
+                    size: 166,
                     description: "Structured responses, articulate reasoning, and concise delivery",
                   },
                   {
@@ -1364,7 +1364,7 @@ export function AiInterviewRoom({
                     target: 100,
                     color: scoreTone(scorecard.categories.problemSolving).color,
                     colorEnd: scoreTone(scorecard.categories.problemSolving).color,
-                    size: 120,
+                    size: 128,
                     description: "System engineering judgment, trade-offs, and pragmatic decisions",
                   },
                 ]}

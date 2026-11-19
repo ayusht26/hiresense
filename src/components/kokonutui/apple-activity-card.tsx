@@ -242,18 +242,13 @@ export function AppleActivityCard({
         {/* Center Overall Score Display */}
         {overallScore !== undefined && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none">
-            <span className="text-[11px] font-[600] uppercase tracking-wider text-[#8a8a8a]">
-              Overall
+            <span
+              className="text-[32px] sm:text-[36px] font-[700] tracking-tight tabular leading-none"
+              style={{ color: scoreTone(overallScore).solid }}
+            >
+              {overallScore}
             </span>
-            <div className="flex items-baseline justify-center">
-              <span
-                className="text-[38px] sm:text-[44px] font-[650] tracking-tight tabular"
-                style={{ color: scoreTone(overallScore).solid }}
-              >
-                {overallScore}
-              </span>
-              <span className="text-[16px] text-[#707070] font-[450] ml-0.5">/100</span>
-            </div>
+            <span className="text-[11px] font-[500] text-[#707070] mt-1 tabular">/ 100</span>
           </div>
         )}
       </div>
@@ -299,8 +294,8 @@ export function AppleActivityCard({
                   {act.current}
                 </span>
                 <span className="text-[12px] text-[#707070] font-[450] ml-1">
-                  /{act.target}
-                  {act.unit ? ` ${act.unit}` : "%"}
+                  / {act.target}
+                  {act.unit ? ` ${act.unit}` : ""}
                 </span>
               </div>
             </div>

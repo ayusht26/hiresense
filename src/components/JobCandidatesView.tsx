@@ -407,7 +407,7 @@ export function JobCandidatesView({
       ) : (
         <div className="space-y-3">
           {filteredCandidates.map((candidate, idx) => {
-            const { isSelected, reason, badge } = getCandidateClassification(candidate);
+            const { isSelected, reason, badge, isOverride } = getCandidateClassification(candidate);
             const initials =
               candidate.candidateName
                 .split(" ")
@@ -444,29 +444,19 @@ export function JobCandidatesView({
 
                 <div
                   onClick={() => openAudit(candidate)}
-                  className={`group relative cursor-pointer rounded-[20px] p-4 sm:p-5 transition-all border ${
-                    isSelected
-                      ? "border-emerald-500/30 bg-[#141414] hover:border-emerald-500/50 hover:bg-[#161c18] bg-gradient-to-r from-emerald-500/[0.04] to-transparent shadow-[0_0_20px_rgba(52,211,153,0.03)]"
-                      : "border-rose-500/25 bg-[#141414] hover:border-rose-500/40 hover:bg-[#1a1314] bg-gradient-to-r from-rose-500/[0.03] to-transparent shadow-[0_0_20px_rgba(251,113,133,0.02)]"
-                  }`}
+                  className="group relative cursor-pointer rounded-[20px] bg-[#141414] border border-[rgba(255,255,255,0.08)] p-4 sm:p-5 hover:border-[rgba(255,255,255,0.18)] hover:bg-[#181818] transition-all"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     {/* Left: Candidate Info */}
                     <div className="flex items-start gap-3">
-                      {/* Initials Tile with Green/Red Accent */}
-                      <div
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[30%] border text-[14px] font-[700] transition-colors ${
-                          isSelected
-                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.15)]"
-                            : "bg-rose-500/10 border-rose-500/25 text-rose-300 shadow-[0_0_10px_rgba(251,113,133,0.10)]"
-                        }`}
-                      >
+                      {/* Neutral initials tile */}
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[30%] bg-[#262626] border border-[rgba(255,255,255,0.10)] text-[14px] font-[700] text-[#f5f5f5]">
                         {initials}
                       </div>
 
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          {/* Accent status dot */}
+                          {/* Minimal status dot */}
                           <span
                             className={`h-2 w-2 shrink-0 rounded-full transition-all ${
                               isSelected
@@ -479,21 +469,11 @@ export function JobCandidatesView({
                             {candidate.candidateName}
                           </span>
 
-                          {/* Accent Status Badge */}
-                          <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-[600] px-2.5 py-0.5 rounded-full border ${
-                              isSelected
-                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                : "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                            }`}
-                          >
-                            {isSelected ? (
-                              <CheckCircle2 size={11} className="text-emerald-400" />
-                            ) : (
-                              <UserX size={11} className="text-rose-400" />
-                            )}
-                            <span>{badge}</span>
-                          </span>
+                          {isOverride && (
+                            <span className="text-[10px] font-[600] px-2 py-0.5 rounded-full bg-[#262626] text-[#8a8a8a] border border-[rgba(255,255,255,0.08)]">
+                              {badge}
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2 text-[12px] text-[#8a8a8a] flex-wrap">
@@ -527,7 +507,13 @@ export function JobCandidatesView({
                           Resume fit
                         </span>
                         <div className="flex items-baseline justify-end gap-1">
-                          <span className="text-[18px] font-[650] text-[#f5f5f5] tabular">
+                          <span
+                            className={`text-[18px] font-[650] tabular ${
+                              candidate.resumeScore >= resumeThreshold
+                                ? "text-emerald-400"
+                                : "text-rose-400"
+                            }`}
+                          >
                             {candidate.resumeScore}
                           </span>
                           <span className="text-[11px] text-[#707070]">/ 100</span>
@@ -536,39 +522,25 @@ export function JobCandidatesView({
 
                       {/* AI Interview Score */}
                       <div className="text-right">
-                        <span
-                          className={`text-[10px] font-[500] uppercase tracking-wider block ${
-                            candidate.interviewScore !== null
-                              ? isSelected
-                                ? "text-emerald-400/90 font-[600]"
-                                : "text-rose-400/90 font-[600]"
-                              : "text-[#707070]"
-                          }`}
-                        >
+                        <span className="text-[10px] font-[500] uppercase tracking-wider text-[#707070] block">
                           AI Interview
                         </span>
                         <div className="flex items-baseline justify-end gap-1">
                           {candidate.interviewScore !== null ? (
                             <>
                               <span
-                                className={`text-[18px] font-[700] tabular px-2.5 py-0.5 rounded-full border ${
-                                  isSelected
-                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                                    : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                className={`text-[18px] font-[700] tabular ${
+                                  candidate.interviewScore >= activeThreshold
+                                    ? "text-emerald-400"
+                                    : "text-rose-400"
                                 }`}
                               >
                                 {candidate.interviewScore}
                               </span>
-                              <span
-                                className={`text-[11px] ${
-                                  isSelected ? "text-emerald-400/80" : "text-rose-400/80"
-                                }`}
-                              >
-                                / 100
-                              </span>
+                              <span className="text-[11px] text-[#707070]">/ 100</span>
                             </>
                           ) : (
-                            <span className="text-[12px] font-[500] text-[#8a8a8a] px-2 py-0.5 rounded-full bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)]">
+                            <span className="text-[12px] font-[500] text-[#707070]">
                               Pending
                             </span>
                           )}
@@ -582,11 +554,7 @@ export function JobCandidatesView({
                           e.stopPropagation();
                           openAudit(candidate);
                         }}
-                        className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-[600] transition-colors border ${
-                          isSelected
-                            ? "bg-[#1f1f1f] border-emerald-500/25 text-[#f5f5f5] hover:bg-emerald-500/15 hover:border-emerald-500/40"
-                            : "bg-[#1f1f1f] border-rose-500/25 text-[#f5f5f5] hover:bg-rose-500/15 hover:border-rose-500/35"
-                        }`}
+                        className="inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-[600] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] text-[#f5f5f5] hover:bg-[#262626] hover:border-[rgba(255,255,255,0.16)] transition-colors"
                       >
                         <span>Audit</span>
                         <ChevronRight size={13} className="text-[#8a8a8a]" />

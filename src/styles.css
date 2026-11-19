@@ -133,10 +133,19 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
   }
   html {
     background: var(--background);
+    color-scheme: dark;
     scroll-behavior: smooth;
+  }
+  .light,
+  [data-theme="light"],
+  .theme-light {
+    color-scheme: light;
+    scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
   }
   @media (prefers-reduced-motion: reduce) {
     html {
@@ -160,6 +169,31 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Custom dark scrollbar for WebKit (Chrome, Edge, Safari) */
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
   h1,
   h2,
   h3,

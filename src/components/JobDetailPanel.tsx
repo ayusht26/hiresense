@@ -104,7 +104,7 @@ export function JobDetailPanel({
   const tracker = getApplicationProgressTracker(application);
 
   return (
-    <div className="rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.10)] p-6 sm:p-8 text-left space-y-6 overflow-y-auto">
+    <div className="rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.10)] p-6 sm:p-8 text-left space-y-6">
       {/* Top Header & Core Info */}
       <div className="space-y-4 border-b border-[rgba(255,255,255,0.08)] pb-6">
         <div className="flex items-center justify-between gap-3 flex-wrap">

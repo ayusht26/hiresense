@@ -571,7 +571,7 @@ function DashboardPage() {
             </div>
 
             {/* Right Column: Selected Job Detail Panel */}
-            <div className="hidden lg:block lg:col-span-7 sticky top-24 max-h-[82vh] overflow-y-auto">
+            <div className="hidden lg:block lg:col-span-7 sticky top-24 max-h-[82vh] overflow-y-auto pr-1">
               {selectedJob ? (
                 <JobDetailPanel
                   job={selectedJob}
