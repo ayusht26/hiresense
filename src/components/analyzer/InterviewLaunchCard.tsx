@@ -50,7 +50,7 @@ export function InterviewLaunchCard({
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-[11px] font-[600] text-[#0066ff] border border-[rgba(255,255,255,0.06)]">
-                Next Step · AI Technical Assessment with Mira
+                Next Step · AI Technical Assessment with Bable
               </span>
             </div>
             <h3 className="text-[22px] sm:text-[26px] font-[650] tracking-tight text-[#f5f5f5]">
@@ -108,7 +108,7 @@ export function InterviewLaunchCard({
             <div className="flex items-center gap-3 pt-1 text-[13px] font-[500] text-[#f5f5f5]">
               <span className="inline-flex items-center gap-1.5 text-emerald-400">
                 <CheckCircle2 size={13} />
-                <span>Mira AI Ready</span>
+                <span>Bable AI Ready</span>
               </span>
               <span className="inline-flex items-center gap-1.5 text-[#8a8a8a]">
                 <span>Webcam & mic checked in pre-session lobby</span>

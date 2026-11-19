@@ -207,7 +207,7 @@ export async function handleInterviewPlan(payload: PlanRequest) {
       "Company";
     const level = detectLevel((payload.jobPosting["experience"] as string) || "", payload.jobTitle);
 
-    const systemPrompt = `You are Mira, HireSense's lead AI technical interviewer.
+    const systemPrompt = `You are Bable, HireSense's lead AI technical interviewer.
 Generate exactly 5 role-specific, spoken-length interview questions for the position of "${payload.jobTitle}" at "${companyName}".
 Role seniority level detected: ${level.toUpperCase()}.
 

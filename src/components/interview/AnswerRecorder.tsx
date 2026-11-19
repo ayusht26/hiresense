@@ -48,7 +48,7 @@ export function AnswerRecorder({
 
   const isRecording = phase === "recording";
   const isProcessing = phase === "processing";
-  const isMiraActive = phase === "preparing" || phase === "speaking";
+  const isBableActive = phase === "preparing" || phase === "speaking";
 
   return (
     <div className={cn("w-full flex flex-col items-center py-2 space-y-3", className)}>
@@ -79,11 +79,11 @@ export function AnswerRecorder({
           <div
             className={cn(
               "flex h-14 w-14 items-center justify-center rounded-full border transition-colors",
-              isMiraActive
+              isBableActive
                 ? "bg-[#141414] border-[rgba(255,255,255,0.08)] text-[#5c5c5c]"
                 : "bg-[#1a1a1a] border-[rgba(255,255,255,0.12)] text-[#8a8a8a]",
             )}
-            title={isMiraActive ? statusTexts.miraAsking : undefined}
+            title={isBableActive ? statusTexts.bableAsking : undefined}
           >
             <Mic size={22} />
           </div>
@@ -106,8 +106,8 @@ export function AnswerRecorder({
             ? statusTexts.processing
             : isRecording
               ? statusTexts.tapStopWhenDone
-              : isMiraActive
-                ? statusTexts.miraAsking
+              : isBableActive
+                ? statusTexts.bableAsking
                 : statusTexts.listeningHint}
         </p>
       </div>

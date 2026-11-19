@@ -343,8 +343,8 @@ export function AiInterviewRoom({
           ...prev,
           {
             id: turnId,
-            speaker: "mira",
-            speakerName: "Mira",
+            speaker: "bable",
+            speakerName: "Bable",
             text: q.question,
             isStreaming: false,
           },
@@ -713,11 +713,11 @@ export function AiInterviewRoom({
             <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-[30%] bg-[#141414] border border-[rgba(255,255,255,0.12)] text-[#f5f5f5] font-[650] text-[15px]">
-                  M
+                  B
                 </div>
                 <div>
                   <h3 className="text-[18px] sm:text-[20px] font-[650] text-[#f5f5f5] tracking-tight">
-                    Mira AI Interview Room.
+                    Bable AI Interview Room.
                   </h3>
                   <p className="text-[12px] font-[450] text-[#8a8a8a]">
                     Pre-session readiness check for {targetJobTitle}
@@ -805,8 +805,8 @@ export function AiInterviewRoom({
                     How your AI interview works.
                   </h4>
                   <p className="text-[13px] text-[#8a8a8a] leading-relaxed">
-                    Mira asks 5 structured, spoken-length questions covering role fundamentals,
-                    technical depth, and system trade-offs. Mira automatically listens after each
+                    Bable asks 5 structured, spoken-length questions covering role fundamentals,
+                    technical depth, and system trade-offs. Bable automatically listens after each
                     question.
                   </p>
                 </div>
@@ -814,7 +814,7 @@ export function AiInterviewRoom({
                 <div className="space-y-2.5 text-[12px] text-[#8a8a8a]">
                   <div className="flex items-start gap-2.5">
                     <CheckCircle2 size={15} className="text-emerald-400 shrink-0 mt-0.5" />
-                    <span>Auto-listening begins as soon as Mira finishes speaking.</span>
+                    <span>Auto-listening begins as soon as Bable finishes speaking.</span>
                   </div>
                   <div className="flex items-start gap-2.5">
                     <CheckCircle2 size={15} className="text-emerald-400 shrink-0 mt-0.5" />
@@ -893,18 +893,18 @@ export function AiInterviewRoom({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-[30%] bg-[#1a1a1a] border border-[rgba(255,255,255,0.12)] text-[#f5f5f5] font-[650] text-[15px]">
-                        M
+                        B
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[14px] font-[650] text-[#f5f5f5]">Mira</span>
+                          <span className="text-[14px] font-[650] text-[#f5f5f5]">Bable</span>
                           <span className="text-[11px] text-[#8a8a8a]">· Technical Panel</span>
                         </div>
                         <span className="text-[11px] text-[#8a8a8a] block">
                           {questionPhase === "preparing"
                             ? STATUS_TEXTS[language].preparingQuestion
                             : questionPhase === "speaking"
-                              ? STATUS_TEXTS[language].miraAsking
+                              ? STATUS_TEXTS[language].bableAsking
                               : questionPhase === "processing"
                                 ? STATUS_TEXTS[language].processing
                                 : STATUS_TEXTS[language].listeningToCandidate}
@@ -1583,7 +1583,7 @@ export function AiInterviewRoom({
                           {/* Benchmark Outline */}
                           <div className="p-3.5 rounded-[14px] bg-[#1a1a1a]/60 border border-[rgba(255,255,255,0.06)] space-y-1 text-[12px]">
                             <span className="font-[600] text-[#f5f5f5] block">
-                              Mira's Benchmark Guide:
+                              Bable's Benchmark Guide:
                             </span>
                             <p className="text-[#8a8a8a] leading-relaxed">{item.modelAnswer}</p>
                           </div>

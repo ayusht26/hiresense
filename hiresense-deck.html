@@ -740,7 +740,7 @@ u.d:after {
     </div>
     <div class="card r">
       <h3 style="color:var(--coral);margin-bottom:8px">03 Interview</h3>
-      <p>Mira, an AI conversational interviewer, conducts rubric-governed voice sessions tailored to role requirements and the candidate's exact project claims, asking targeted follow-ups.</p>
+      <p>Bable, an AI conversational interviewer, conducts rubric-governed voice sessions tailored to role requirements and the candidate's exact project claims, asking targeted follow-ups.</p>
     </div>
   </div>
   <p class="sm r" style="margin-top:4px"><b>Guiding Principle:</b> AI performs the evidence-grounded first pass and exposes its reasoning. Human hiring teams make all final employment decisions.</p>
@@ -808,7 +808,7 @@ u.d:after {
         <div class="wf-node">05</div>
         <div class="wf-card">
           <h4>AI Voice Interview</h4>
-          <p>Engage in adaptive multilingual interview with Mira and receive report.</p>
+          <p>Engage in adaptive multilingual interview with Bable and receive report.</p>
         </div>
       </div>
     </div>
@@ -873,7 +873,7 @@ u.d:after {
     <div class="stat-box r">
       <p class="stat-tag">train_data.jsonl</p>
       <div class="stat-num">6,932</div>
-      <p class="stat-desc">Curated instruction-response question generation pairs (e.g., "Generate a Senior Data Engineer systems design prompt") powering Mira's contextual interview planner.</p>
+      <p class="stat-desc">Curated instruction-response question generation pairs (e.g., "Generate a Senior Data Engineer systems design prompt") powering Bable's contextual interview planner.</p>
     </div>
     <div class="stat-box r">
       <p class="stat-tag">Brand & Institution Assets</p>
@@ -958,8 +958,8 @@ u.d:after {
 =========================================== -->
 <section class="s">
   <p class="k r">Conversational AI Engine</p>
-  <h2 class="r">Meet Mira, the AI interviewer</h2>
-  <p class="lede r">Questions are synthesized dynamically from the job profile and the candidate's verified resume deliverables. Mira conducts natural dialogue across English, Hindi, and code-mixed modes.</p>
+  <h2 class="r">Meet Bable, the AI interviewer</h2>
+  <p class="lede r">Questions are synthesized dynamically from the job profile and the candidate's verified resume deliverables. Bable conducts natural dialogue across English, Hindi, and code-mixed modes.</p>
   
   <div class="flow r" style="margin:4px 0">
     <span>1. Introduction</span><em>&rarr;</em>
@@ -1061,7 +1061,7 @@ u.d:after {
           <span class="file-tag">src/lib/ai-interview.ts</span>
         </div>
         <p style="margin-top:6px">
-          Tracked via <code>interview-planner.ts</code> and <code>useMiraSpeech.ts</code>: Word Error Rate (WER) across Indic languages and code-mixing, rubric inter-rater agreement with blind raters, end-to-end question latency, and token cost per interview.
+          Tracked via <code>interview-planner.ts</code> and <code>useBableSpeech.ts</code>: Word Error Rate (WER) across Indic languages and code-mixing, rubric inter-rater agreement with blind raters, end-to-end question latency, and token cost per interview.
         </p>
       </div>
 
@@ -1127,7 +1127,7 @@ u.d:after {
       <div>
         <p class="k" style="font-size:10.5px;margin-bottom:8px">Key Deliverables & Responsibilities</p>
         <ul class="team-deliverables">
-          <li><b>Mira interview flow:</b> 7-stage state machine controlling dynamic interview transitions and pacing.</li>
+          <li><b>Bable interview flow:</b> 7-stage state machine controlling dynamic interview transitions and pacing.</li>
           <li><b>Rubric evaluation engine:</b> Answer grading across 6 competencies with dynamic weight re-balancing.</li>
           <li><b>Screening & verdict logic:</b> Fit thresholds (Strong, Moderate, Developing) with audited recruiter overrides.</li>
           <li><b>Telemetry & speech evaluation:</b> Word error rate benchmarking, inter-rater reliability, and cost profiling.</li>
@@ -1204,7 +1204,7 @@ const WF_STAGES = [
   "Job Ingestion & Parsing",
   "Resume & Semantic Match",
   "Screening & Verification",
-  "Mira AI Voice Interview & Verdict"
+  "Bable AI Voice Interview & Verdict"
 ];
 
 function updateWorkflowUI() {

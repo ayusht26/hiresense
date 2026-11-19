@@ -5,7 +5,8 @@
 export type InterviewLanguage = "en" | "hi" | "hinglish";
 
 export interface StatusStrings {
-  miraAsking: string;
+  bableAsking: string;
+  miraAsking: string; // Backward compatibility alias
   listening: string;
   listeningHint: string;
   couldNotHear: string;
@@ -26,7 +27,8 @@ export interface StatusStrings {
 
 export const STATUS_TEXTS: Record<InterviewLanguage, StatusStrings> = {
   en: {
-    miraAsking: "Mira is asking...",
+    bableAsking: "Bable is asking...",
+    miraAsking: "Bable is asking...",
     listening: "Listening, answer now, then press the red button",
     listeningHint: "Answer verbally, then tap the red stop button.",
     couldNotHear: "We couldn't hear an answer.",
@@ -45,7 +47,8 @@ export const STATUS_TEXTS: Record<InterviewLanguage, StatusStrings> = {
     wordsTranscribed: "words transcribed",
   },
   hi: {
-    miraAsking: "मीरा सवाल पूछ रही हैं...",
+    bableAsking: "बेबल सवाल पूछ रहे हैं...",
+    miraAsking: "बेबल सवाल पूछ रहे हैं...",
     listening: "सुन रहे हैं, अब जवाब दीजिए, फिर लाल बटन दबाएं",
     listeningHint: "बोलकर जवाब दीजिए, फिर लाल बटन दबाएं।",
     couldNotHear: "हम आपका जवाब सुन नहीं पाए।",
@@ -64,7 +67,8 @@ export const STATUS_TEXTS: Record<InterviewLanguage, StatusStrings> = {
     wordsTranscribed: "शब्द दर्ज हुए",
   },
   hinglish: {
-    miraAsking: "Mira question pooch rahi hain...",
+    bableAsking: "Bable question pooch rahe hain...",
+    miraAsking: "Bable question pooch rahe hain...",
     listening: "Listening, ab answer dijiye, phir red button dabaiye",
     listeningHint: "Boliye, phir done hone par red stop button tap kijiye.",
     couldNotHear: "Hum aapka answer sun nahi paaye.",
@@ -91,16 +95,16 @@ export const QUESTION_TEMPLATES = {
   intro: {
     en: (jobTitle: string, company: string) =>
       company && company !== "Company"
-        ? `Hi, I'm Mira. Welcome to your interview for the ${jobTitle} position at ${company}. To start, please introduce yourself and tell me what excites you about this role.`
-        : `Hi, I'm Mira. Welcome to your interview for the ${jobTitle} position. To start, please introduce yourself and tell me what excites you about this role.`,
+        ? `Hi, I'm Bable. Welcome to your interview for the ${jobTitle} position at ${company}. To start, please introduce yourself and tell me what excites you about this role.`
+        : `Hi, I'm Bable. Welcome to your interview for the ${jobTitle} position. To start, please introduce yourself and tell me what excites you about this role.`,
     hi: (jobTitle: string, company: string) =>
       company && company !== "Company"
-        ? `नमस्ते, मैं मीरा हूँ। ${company} में ${jobTitle} पद के इंटरव्यू में आपका स्वागत है। शुरू करने के लिए, कृपया अपना परिचय दीजिए और बताइए कि आपको इस भूमिका में रुचि क्यों है।`
-        : `नमस्ते, मैं मीरा हूँ। ${jobTitle} पद के इंटरव्यू में आपका स्वागत है। शुरू करने के लिए, कृपया अपना परिचय दीजिए और बताइए कि आपको इस भूमिका में रुचि क्यों है।`,
+        ? `नमस्ते, मैं बेबल हूँ। ${company} में ${jobTitle} पद के इंटरव्यू में आपका स्वागत है। शुरू करने के लिए, कृपया अपना परिचय दीजिए और बताइए कि आपको इस भूमिका में रुचि क्यों है।`
+        : `नमस्ते, मैं बेबल हूँ। ${jobTitle} पद के इंटरव्यू में आपका स्वागत है। शुरू करने के लिए, कृपया अपना परिचय दीजिए और बताइए कि आपको इस भूमिका में रुचि क्यों है।`,
     hinglish: (jobTitle: string, company: string) =>
       company && company !== "Company"
-        ? `Hi, main Mira hoon. ${company} mein ${jobTitle} position ke interview mein aapka swagat hai. Shuru karne ke liye apna introduction dijiye aur batayiye ki aapko is role mein interest kyun hai?`
-        : `Hi, main Mira hoon. ${jobTitle} position ke interview mein aapka swagat hai. Shuru karne ke liye apna introduction dijiye aur batayiye ki aapko is role mein interest kyun hai?`,
+        ? `Hi, main Bable hoon. ${company} mein ${jobTitle} position ke interview mein aapka swagat hai. Shuru karne ke liye apna introduction dijiye aur batayiye ki aapko is role mein interest kyun hai?`
+        : `Hi, main Bable hoon. ${jobTitle} position ke interview mein aapka swagat hai. Shuru karne ke liye apna introduction dijiye aur batayiye ki aapko is role mein interest kyun hai?`,
   },
 
   concept: {

@@ -30,8 +30,8 @@ describe("Interview Planner (src/lib/interview-planner.ts)", () => {
     expect(questions[3]?.phase).toBe("scenario");
     expect(questions[4]?.phase).toBe("closing");
 
-    // Intro contains Mira and the title
-    expect(questions[0]?.question).toContain("Mira");
+    // Intro contains Bable and the title
+    expect(questions[0]?.question).toContain("Bable");
     expect(questions[0]?.question).toContain("Junior Software Engineer – DSA (Fresher)");
 
     // None of the questions contain old dataset companies
@@ -126,7 +126,7 @@ describe("Interview Planner (src/lib/interview-planner.ts)", () => {
     });
 
     expect(questions).toHaveLength(5);
-    expect(questions[0]?.question).toContain("मीरा");
+    expect(questions[0]?.question).toContain("बेबल");
     expect(questions[0]?.question).toContain("Database Administrator");
     // Technical terms remain in Latin script
     expect(questions[1]?.question).toContain("PostgreSQL");
@@ -143,7 +143,7 @@ describe("Interview Planner (src/lib/interview-planner.ts)", () => {
     });
 
     expect(questions).toHaveLength(5);
-    expect(questions[0]?.question).toContain("Mira");
+    expect(questions[0]?.question).toContain("Bable");
     expect(questions[0]?.question).toContain("swagat");
     expect(questions[1]?.question).toContain("React");
   });

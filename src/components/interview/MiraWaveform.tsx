@@ -112,3 +112,6 @@ export function MiraWaveform({
     </div>
   );
 }
+
+export type BableWaveformProps = MiraWaveformProps;
+export const BableWaveform = MiraWaveform;

@@ -8,7 +8,7 @@ import { tokenizeForHighlight } from "@/lib/speech-sync";
 
 export interface ConversationTurn {
   id: string;
-  speaker: "mira" | "candidate";
+  speaker: "bable" | "mira" | "candidate";
   speakerName: string;
   text: string;
   isStreaming?: boolean;
@@ -251,12 +251,12 @@ export function LiveSyncedTranscript({
       >
         {preparedTurns.length === 0 && !showPreparingRow ? (
           <div className="py-12 text-center text-[#707070] text-[13px]">
-            Mira will begin the interview shortly...
+            Bable will begin the interview shortly...
           </div>
         ) : (
           <>
             {preparedTurns.map((turn, idx) => {
-              const isMira = turn.speaker === "mira";
+              const isBable = turn.speaker === "bable" || turn.speaker === "mira";
               const isActive = turn.id === activeTurnId;
               const progress = isActive ? playbackProgress : 1;
               const isLatest = idx === preparedTurns.length - 1;
@@ -266,7 +266,7 @@ export function LiveSyncedTranscript({
                   key={`${turn.id}_${idx}`}
                   className={cn(
                     "group relative rounded-[16px] p-3.5 transition-colors border",
-                    isMira
+                    isBable
                       ? "bg-[#171717] border-[rgba(255,255,255,0.06)]"
                       : "bg-[#1a1a1a] border-[rgba(255,255,255,0.08)]",
                   )}
@@ -278,15 +278,15 @@ export function LiveSyncedTranscript({
                       <div
                         className={cn(
                           "h-6 w-6 rounded-[30%] flex items-center justify-center text-[11px] font-[700]",
-                          isMira
+                          isBable
                             ? "bg-[#1a1a1a] border border-[rgba(255,255,255,0.15)] text-[#f5f5f5]"
                             : "bg-[#f5f5f5] text-[#0a0a0a]",
                         )}
                       >
-                        {isMira ? "M" : (candidateName[0] || "Y").toUpperCase()}
+                        {isBable ? "B" : (candidateName[0] || "Y").toUpperCase()}
                       </div>
                       <span className="text-[12px] font-[650] text-[#f5f5f5]">
-                        {isMira ? "Mira" : candidateName}
+                        {isBable ? "Bable" : candidateName}
                       </span>
                       {turn.isStreaming && (
                         <span className="text-[11px] text-emerald-400 font-[500] animate-pulse">
@@ -295,8 +295,8 @@ export function LiveSyncedTranscript({
                       )}
                     </div>
 
-                    {/* Replay action for Mira lines */}
-                    {isMira && onReplayTurn && !turn.isStreaming && (
+                    {/* Replay action for Bable lines */}
+                    {isBable && onReplayTurn && !turn.isStreaming && (
                       <button
                         type="button"
                         onClick={() => onReplayTurn(turn)}
@@ -310,7 +310,7 @@ export function LiveSyncedTranscript({
                   </div>
 
                   {/* Words */}
-                  {isMira ? (
+                  {isBable ? (
                     <MiraTurnHighlight
                       text={turn.text}
                       turnId={turn.id}
@@ -331,7 +331,7 @@ export function LiveSyncedTranscript({
 
             {showPreparingRow && (
               <div className="text-[13px] text-[#8a8a8a] px-3.5 py-2">
-                Mira is preparing the next question.
+                Bable is preparing the next question.
               </div>
             )}
           </>

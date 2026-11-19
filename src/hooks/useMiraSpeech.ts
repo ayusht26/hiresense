@@ -839,3 +839,5 @@ export function useMiraSpeech(): {
     [phase, progress, speak, prefetch, cancel, isSpeaking],
   );
 }
+
+export const useBableSpeech = useMiraSpeech;

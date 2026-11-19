@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { generateInterviewQuestions, evaluateInterviewSession } from "@/lib/ai-interview";
 
-describe("AI Interview Engine (Mira Persona)", () => {
+describe("AI Interview Engine (Bable Persona)", () => {
   it("generates 5 role-grounded structured interview questions", () => {
     const jobPosting = {
       qualifications: {
@@ -23,7 +23,7 @@ describe("AI Interview Engine (Mira Persona)", () => {
     expect(questions[3]!.phase).toBe("scenario");
     expect(questions[4]!.phase).toBe("closing");
 
-    expect(questions[0]!.question).toContain("Mira");
+    expect(questions[0]!.question).toContain("Bable");
     expect(questions[0]!.question).toContain("Senior Frontend Engineer");
   });
 
