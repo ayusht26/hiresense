@@ -73,6 +73,8 @@ const DEMO_JOB_FALLBACK: Job = {
   salary_currency: "INR",
   salary_period: "year",
   salary_display: "₹18,00,000 – ₹28,00,000 / year",
+  resume_threshold: 60,
+  interview_threshold: 60,
   raw_input: null,
   model_name: "HireSense Hybrid Structurer",
   prompt_version: "v1.0.0",
@@ -669,6 +671,9 @@ function JobApplyPage() {
               preferredLanguage={preferredLanguage}
               verificationQuestions={analysisResult.verification_questions}
               analysis={analysisResult}
+              resumeScore={analysisResult.overall_fit_percentage}
+              resumeThreshold={job.resume_threshold ?? 60}
+              interviewThreshold={job.interview_threshold ?? 60}
             />
           </div>
           );

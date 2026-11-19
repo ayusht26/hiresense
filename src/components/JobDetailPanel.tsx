@@ -170,6 +170,19 @@ export function JobDetailPanel({
           <span className="font-[600] text-[#f5f5f5]">{salaryDisplay}</span>
         </div>
 
+        {/* Screening Thresholds Badges */}
+        <div className="flex items-center gap-2 text-[12px] text-[#8a8a8a] flex-wrap pt-0.5">
+          <span className="font-[600] text-[#f5f5f5]">Screening Gates:</span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-emerald-400 border border-emerald-500/20 font-[500]">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span>Resume ≥ {job.resume_threshold ?? 60} / 100</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-emerald-400 border border-emerald-500/20 font-[500]">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span>Interview ≥ {job.interview_threshold ?? 60} / 100</span>
+          </span>
+        </div>
+
         {/* Student Progress Tracker & Context-Aware CTA */}
         {!isRecruiter && (
           <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] p-4 space-y-2.5">
@@ -309,6 +322,8 @@ export function JobDetailPanel({
           candidates={candidates}
           jobTitle={job.title}
           loading={loadingCandidates}
+          resumeThreshold={job.resume_threshold ?? 60}
+          interviewThreshold={job.interview_threshold ?? 60}
         />
       ) : (
         /* RENDER JOB DETAILS VIEW */
@@ -376,6 +391,32 @@ export function JobDetailPanel({
               <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-3.5">
                 <span className="text-[12px] font-[450] text-[#707070] block">Work mode</span>
                 <span className="text-[14px] font-[600] text-[#f5f5f5] capitalize">{workMode}</span>
+              </div>
+            </div>
+
+            {/* Screening Gates Card */}
+            <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[14px] font-[650] text-[#f5f5f5] tracking-tight">Screening Gates.</h4>
+                <span className="text-[11px] text-[#707070]">Configured workflow thresholds</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 rounded-[12px] bg-[#141414] border border-[rgba(255,255,255,0.06)] space-y-1">
+                  <span className="text-[11px] font-[500] text-[#8a8a8a] block">Resume Match Threshold</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[20px] font-[650] text-[#f5f5f5] tabular">{job.resume_threshold ?? 60}</span>
+                    <span className="text-[12px] text-[#707070]">/ 100</span>
+                  </div>
+                  <p className="text-[11px] text-[#5c5c5c]">Candidates must pass this to unlock the AI interview.</p>
+                </div>
+                <div className="p-3 rounded-[12px] bg-[#141414] border border-[rgba(255,255,255,0.06)] space-y-1">
+                  <span className="text-[11px] font-[500] text-[#8a8a8a] block">Interview Screening Threshold</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[20px] font-[650] text-[#f5f5f5] tabular">{job.interview_threshold ?? 60}</span>
+                    <span className="text-[12px] text-[#707070]">/ 100</span>
+                  </div>
+                  <p className="text-[11px] text-[#5c5c5c]">Benchmark score out of 100 for candidate selection.</p>
+                </div>
               </div>
             </div>
           </div>

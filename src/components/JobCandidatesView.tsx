@@ -14,6 +14,7 @@ import {
   Inbox,
   UserCheck,
   UserX,
+  Sliders,
 } from "lucide-react";
 import {
   type CandidateApplication,
@@ -25,21 +26,32 @@ interface JobCandidatesViewProps {
   candidates: CandidateApplication[];
   jobTitle: string;
   loading?: boolean;
+  resumeThreshold?: number;
+  interviewThreshold?: number;
 }
 
 export function JobCandidatesView({
   candidates,
   jobTitle,
   loading = false,
+  resumeThreshold = 60,
+  interviewThreshold = 60,
 }: JobCandidatesViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterTab, setFilterTab] = useState<"all" | "completed" | "pending">("all");
+  const [filterTab, setFilterTab] = useState<
+    "all" | "selected" | "below" | "completed" | "pending"
+  >("all");
   const [sortBy, setSortBy] = useState<"interview" | "resume" | "recent">("interview");
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateApplication | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Local decision state
-  const [decisions, setDecisions] = useState<Record<string, "shortlisted" | "rejected" | "under_review">>({});
+  // Recruiter interactive threshold slider (initialized to the job's interview screening threshold)
+  const [activeThreshold, setActiveThreshold] = useState<number>(interviewThreshold);
+
+  // Local decision state for overrides
+  const [decisions, setDecisions] = useState<
+    Record<string, "shortlisted" | "rejected" | "under_review">
+  >({});
 
   const handleDecisionChange = async (
     candidateId: string,
@@ -52,10 +64,65 @@ export function JobCandidatesView({
     }
   };
 
+  // Helper to determine if candidate is selected / above threshold vs not selected / below threshold
+  const getCandidateClassification = (candidate: CandidateApplication) => {
+    const decision = decisions[candidate.id] || candidate.recruiterDecision || "under_review";
+    const isTested = candidate.interviewScore !== null;
+
+    // Recruiter manual overrides take precedence
+    if (decision === "shortlisted") {
+      return {
+        isSelected: true,
+        reason: "Shortlisted",
+        badge: "Shortlisted (Override)",
+        isOverride: true,
+      };
+    }
+    if (decision === "rejected") {
+      return {
+        isSelected: false,
+        reason: "Rejected",
+        badge: "Rejected (Override)",
+        isOverride: true,
+      };
+    }
+
+    // Automated threshold checks:
+    if (isTested) {
+      const score = candidate.interviewScore ?? 0;
+      const isPassed = score >= activeThreshold;
+      return {
+        isSelected: isPassed,
+        reason: isPassed ? `Qualified (≥ ${activeThreshold})` : `Below threshold (< ${activeThreshold})`,
+        badge: isPassed ? "Qualified" : "Below threshold",
+        isOverride: false,
+      };
+    } else {
+      // Pending interview: evaluated on resume match threshold
+      const isResumePassed = candidate.resumeScore >= resumeThreshold;
+      return {
+        isSelected: isResumePassed,
+        reason: isResumePassed ? `Resume passed (≥ ${resumeThreshold})` : `Resume below threshold (< ${resumeThreshold})`,
+        badge: isResumePassed ? "Eligible for Interview" : "Resume Below Threshold",
+        isOverride: false,
+      };
+    }
+  };
+
   // Metrics calculated strictly from real candidates
   const completedCount = useMemo(
     () => candidates.filter((c) => c.interviewScore !== null).length,
     [candidates],
+  );
+
+  const selectedCount = useMemo(
+    () => candidates.filter((c) => getCandidateClassification(c).isSelected).length,
+    [candidates, activeThreshold, decisions, resumeThreshold],
+  );
+
+  const belowCount = useMemo(
+    () => candidates.length - selectedCount,
+    [candidates.length, selectedCount],
   );
 
   const avgResumeScore = useMemo(() => {
@@ -82,7 +149,12 @@ export function JobCandidatesView({
         const matchesCollege = (c.university || "").toLowerCase().includes(q);
         if (q && !matchesName && !matchesEmail && !matchesCollege) return false;
 
-        // Status Filter
+        // Classification status
+        const { isSelected } = getCandidateClassification(c);
+
+        // Filter tabs
+        if (filterTab === "selected" && !isSelected) return false;
+        if (filterTab === "below" && isSelected) return false;
         if (filterTab === "completed" && c.interviewScore === null) return false;
         if (filterTab === "pending" && c.interviewScore !== null) return false;
 
@@ -97,7 +169,7 @@ export function JobCandidatesView({
         }
         return new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime();
       });
-  }, [candidates, searchQuery, filterTab, sortBy]);
+  }, [candidates, searchQuery, filterTab, sortBy, activeThreshold, decisions, resumeThreshold]);
 
   const openAudit = (candidate: CandidateApplication) => {
     setSelectedCandidate({
@@ -181,6 +253,58 @@ export function JobCandidatesView({
         </div>
       </div>
 
+      {/* Recruiter Screening Threshold Bar (derived from landing page visual language) */}
+      <div className="rounded-[20px] bg-[#141414] border border-[rgba(255,255,255,0.10)] p-4 sm:p-5 space-y-3 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Sliders size={15} className="text-emerald-400" />
+            <span className="text-[14px] font-[650] text-[#f5f5f5]">Screening Threshold Cutoff</span>
+            <span className="text-[11px] font-[600] text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              {selectedCount} Qualified
+            </span>
+            {belowCount > 0 && (
+              <span className="text-[11px] font-[600] text-rose-400 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20">
+                {belowCount} Below Cutoff
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] text-[#8a8a8a]">Threshold:</span>
+            <span className="font-mono text-[14px] font-[700] text-[#f5f5f5] tabular px-2.5 py-0.5 rounded-full bg-[#1f1f1f] border border-[rgba(255,255,255,0.12)]">
+              {activeThreshold} / 100
+            </span>
+          </div>
+        </div>
+
+        {/* Minimal Threshold Bar with interactive slider */}
+        <div className="space-y-1.5 pt-1">
+          <div className="relative h-2 rounded-full bg-[#1f1f1f] overflow-hidden">
+            <div
+              className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-emerald-500/40 to-emerald-400 rounded-full transition-all duration-150"
+              style={{ width: `${activeThreshold}%` }}
+            />
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={activeThreshold}
+            onChange={(e) => setActiveThreshold(Number(e.target.value))}
+            className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-[#262626] rounded-lg appearance-none"
+            aria-label="Screening threshold slider"
+          />
+        </div>
+
+        <div className="flex items-center justify-between text-[11px] text-[#707070] pt-0.5">
+          <span>0 (Pass all)</span>
+          <span className="text-[#8a8a8a]">
+            Role criteria: Resume ≥ {resumeThreshold} · Interview ≥ {interviewThreshold}
+          </span>
+          <span>100 (Strict)</span>
+        </div>
+      </div>
+
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Search */}
@@ -208,6 +332,33 @@ export function JobCandidatesView({
           >
             All ({candidates.length})
           </button>
+
+          <button
+            type="button"
+            onClick={() => setFilterTab("selected")}
+            className={`h-8 px-3 rounded-full text-[11px] font-[600] inline-flex items-center gap-1.5 transition-colors ${
+              filterTab === "selected"
+                ? "bg-emerald-400 text-[#0a0a0a]"
+                : "bg-[#1a1a1a] text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10"
+            }`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span>Qualified ({selectedCount})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setFilterTab("below")}
+            className={`h-8 px-3 rounded-full text-[11px] font-[600] inline-flex items-center gap-1.5 transition-colors ${
+              filterTab === "below"
+                ? "bg-rose-400 text-[#0a0a0a]"
+                : "bg-[#1a1a1a] text-rose-400 border border-rose-500/20 hover:bg-rose-500/10"
+            }`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+            <span>Below cutoff ({belowCount})</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setFilterTab("completed")}
@@ -219,6 +370,7 @@ export function JobCandidatesView({
           >
             Tested ({completedCount})
           </button>
+
           <button
             type="button"
             onClick={() => setFilterTab("pending")}
@@ -236,7 +388,7 @@ export function JobCandidatesView({
             <ArrowUpDown size={12} />
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as "interview" | "resume" | "recent")}
               className="bg-[#1a1a1a] text-[#f5f5f5] rounded-full border border-[rgba(255,255,255,0.08)] px-2.5 py-1 text-[11px] font-[500] focus:outline-none"
             >
               <option value="interview">Interview score</option>
@@ -254,122 +406,205 @@ export function JobCandidatesView({
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredCandidates.map((candidate) => {
-            const decision = decisions[candidate.id] || candidate.recruiterDecision || "under_review";
-            const initials = candidate.candidateName
-              .split(" ")
-              .filter(Boolean)
-              .map((n) => n[0])
-              .join("")
-              .substring(0, 2)
-              .toUpperCase() || "C";
+          {filteredCandidates.map((candidate, idx) => {
+            const { isSelected, reason, badge } = getCandidateClassification(candidate);
+            const initials =
+              candidate.candidateName
+                .split(" ")
+                .filter(Boolean)
+                .map((n) => n[0])
+                .join("")
+                .substring(0, 2)
+                .toUpperCase() || "C";
+
+            // Check if we crossed the threshold divider boundary when sorted by interview score
+            const prevCandidate = idx > 0 ? filteredCandidates[idx - 1] : null;
+            const prevPassed = prevCandidate
+              ? getCandidateClassification(prevCandidate).isSelected
+              : null;
+            const showBelowDivider =
+              sortBy === "interview" &&
+              (filterTab === "all" || filterTab === "completed") &&
+              prevPassed === true &&
+              isSelected === false;
 
             return (
-              <div
-                key={candidate.id}
-                onClick={() => openAudit(candidate)}
-                className="group relative cursor-pointer rounded-[20px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] p-4 sm:p-5 hover:border-[rgba(255,255,255,0.18)] hover:bg-[#1f1f1f] transition-all"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  {/* Left: Candidate Info */}
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[30%] bg-[#262626] border border-[rgba(255,255,255,0.1)] text-[14px] font-[700] text-[#f5f5f5]">
-                      {initials}
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[15px] font-[650] text-[#f5f5f5] group-hover:text-white">
-                          {candidate.candidateName}
-                        </span>
-
-                        {decision === "shortlisted" && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-[600] px-2 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <CheckCircle2 size={10} /> Shortlisted
-                          </span>
-                        )}
-
-                        {decision === "rejected" && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-[600] px-2 py-0.2 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
-                            <UserX size={10} /> Rejected
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 text-[12px] text-[#8a8a8a] flex-wrap">
-                        {candidate.email && <span>{candidate.email}</span>}
-                        {candidate.university && (
-                          <>
-                            <span className="text-[#5c5c5c]">•</span>
-                            <span>{candidate.university}</span>
-                          </>
-                        )}
-                        {candidate.degree && (
-                          <>
-                            <span className="text-[#5c5c5c]">•</span>
-                            <span>{candidate.degree}</span>
-                          </>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 text-[11px] text-[#707070] pt-0.5">
-                        <Clock size={11} />
-                        <span>Applied {new Date(candidate.appliedAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
+              <div key={candidate.id} className="space-y-3">
+                {/* Visual "Below threshold" divider line from landing page spec */}
+                {showBelowDivider && (
+                  <div className="flex items-center gap-3 py-2 text-[12px] text-muted-foreground list-none">
+                    <span className="h-px flex-1 bg-[rgba(255,255,255,0.12)]" />
+                    <span className="text-[11px] font-[600] text-rose-400 flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 shadow-sm">
+                      <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+                      Below threshold ({activeThreshold})
+                    </span>
+                    <span className="h-px flex-1 bg-[rgba(255,255,255,0.12)]" />
                   </div>
+                )}
 
-                  {/* Right: Scores & Action */}
-                  <div className="flex items-center gap-4 sm:gap-6 self-end sm:self-center shrink-0">
-                    {/* Resume Match Score */}
-                    <div className="text-right">
-                      <span className="text-[10px] font-[500] uppercase tracking-wider text-[#707070] block">
-                        Resume fit
-                      </span>
-                      <div className="flex items-baseline justify-end gap-1">
-                        <span className="text-[18px] font-[650] text-[#f5f5f5] tabular">
-                          {candidate.resumeScore}
+                <div
+                  onClick={() => openAudit(candidate)}
+                  className={`group relative cursor-pointer rounded-[20px] p-4 sm:p-5 transition-all border ${
+                    isSelected
+                      ? "border-emerald-500/30 bg-[#141414] hover:border-emerald-500/50 hover:bg-[#161c18] bg-gradient-to-r from-emerald-500/[0.04] to-transparent shadow-[0_0_20px_rgba(52,211,153,0.03)]"
+                      : "border-rose-500/25 bg-[#141414] hover:border-rose-500/40 hover:bg-[#1a1314] bg-gradient-to-r from-rose-500/[0.03] to-transparent shadow-[0_0_20px_rgba(251,113,133,0.02)]"
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    {/* Left: Candidate Info */}
+                    <div className="flex items-start gap-3">
+                      {/* Initials Tile with Green/Red Accent */}
+                      <div
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[30%] border text-[14px] font-[700] transition-colors ${
+                          isSelected
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.15)]"
+                            : "bg-rose-500/10 border-rose-500/25 text-rose-300 shadow-[0_0_10px_rgba(251,113,133,0.10)]"
+                        }`}
+                      >
+                        {initials}
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Accent status dot */}
+                          <span
+                            className={`h-2 w-2 shrink-0 rounded-full transition-all ${
+                              isSelected
+                                ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+                                : "bg-rose-400/90 shadow-[0_0_8px_rgba(251,113,133,0.4)]"
+                            }`}
+                          />
+
+                          <span className="text-[15px] font-[650] text-[#f5f5f5] group-hover:text-white">
+                            {candidate.candidateName}
+                          </span>
+
+                          {/* Accent Status Badge */}
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-[600] px-2.5 py-0.5 rounded-full border ${
+                              isSelected
+                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                            }`}
+                          >
+                            {isSelected ? (
+                              <CheckCircle2 size={11} className="text-emerald-400" />
+                            ) : (
+                              <UserX size={11} className="text-rose-400" />
+                            )}
+                            <span>{badge}</span>
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[12px] text-[#8a8a8a] flex-wrap">
+                          {candidate.email && <span>{candidate.email}</span>}
+                          {candidate.university && (
+                            <>
+                              <span className="text-[#5c5c5c]">•</span>
+                              <span>{candidate.university}</span>
+                            </>
+                          )}
+                          {candidate.degree && (
+                            <>
+                              <span className="text-[#5c5c5c]">•</span>
+                              <span>{candidate.degree}</span>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[11px] text-[#707070] pt-0.5">
+                          <Clock size={11} />
+                          <span>Applied {new Date(candidate.appliedAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Scores & Action */}
+                    <div className="flex items-center gap-4 sm:gap-6 self-end sm:self-center shrink-0">
+                      {/* Resume Match Score */}
+                      <div className="text-right">
+                        <span className="text-[10px] font-[500] uppercase tracking-wider text-[#707070] block">
+                          Resume fit
                         </span>
-                        <span className="text-[11px] text-[#707070]">/ 100</span>
+                        <div className="flex items-baseline justify-end gap-1">
+                          <span className="text-[18px] font-[650] text-[#f5f5f5] tabular">
+                            {candidate.resumeScore}
+                          </span>
+                          <span className="text-[11px] text-[#707070]">/ 100</span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* AI Interview Score */}
-                    <div className="text-right">
-                      <span className="text-[10px] font-[500] uppercase tracking-wider text-[#707070] block">
-                        AI Interview
-                      </span>
-                      <div className="flex items-baseline justify-end gap-1">
-                        {candidate.interviewScore !== null ? (
-                          <>
-                            <span className="text-[18px] font-[650] text-[#f5f5f5] tabular">
-                              {candidate.interviewScore}
+                      {/* AI Interview Score */}
+                      <div className="text-right">
+                        <span
+                          className={`text-[10px] font-[500] uppercase tracking-wider block ${
+                            candidate.interviewScore !== null
+                              ? isSelected
+                                ? "text-emerald-400/90 font-[600]"
+                                : "text-rose-400/90 font-[600]"
+                              : "text-[#707070]"
+                          }`}
+                        >
+                          AI Interview
+                        </span>
+                        <div className="flex items-baseline justify-end gap-1">
+                          {candidate.interviewScore !== null ? (
+                            <>
+                              <span
+                                className={`text-[18px] font-[700] tabular px-2.5 py-0.5 rounded-full border ${
+                                  isSelected
+                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                    : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                }`}
+                              >
+                                {candidate.interviewScore}
+                              </span>
+                              <span
+                                className={`text-[11px] ${
+                                  isSelected ? "text-emerald-400/80" : "text-rose-400/80"
+                                }`}
+                              >
+                                / 100
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-[12px] font-[500] text-[#8a8a8a] px-2 py-0.5 rounded-full bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)]">
+                              Pending
                             </span>
-                            <span className="text-[11px] text-[#707070]">/ 100</span>
-                          </>
-                        ) : (
-                          <span className="text-[12px] font-[500] text-[#8a8a8a]">Pending</span>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* CTA Pill */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openAudit(candidate);
-                      }}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#262626] border border-[rgba(255,255,255,0.10)] px-3.5 text-[12px] font-[600] text-[#f5f5f5] transition-colors hover:bg-[#333] hover:border-[rgba(255,255,255,0.2)]"
-                    >
-                      <span>Audit</span>
-                      <ChevronRight size={13} className="text-[#8a8a8a]" />
-                    </button>
+                      {/* CTA Pill */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openAudit(candidate);
+                        }}
+                        className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-[600] transition-colors border ${
+                          isSelected
+                            ? "bg-[#1f1f1f] border-emerald-500/25 text-[#f5f5f5] hover:bg-emerald-500/15 hover:border-emerald-500/40"
+                            : "bg-[#1f1f1f] border-rose-500/25 text-[#f5f5f5] hover:bg-rose-500/15 hover:border-rose-500/35"
+                        }`}
+                      >
+                        <span>Audit</span>
+                        <ChevronRight size={13} className="text-[#8a8a8a]" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })}
+
+          {/* Bottom Footer Notice */}
+          <div className="rounded-[16px] bg-[#141414] border border-[rgba(255,255,255,0.06)] px-4 py-2.5 flex items-center justify-between text-[11px] text-[#707070] flex-wrap gap-2 mt-2">
+            <span>Override recorded by recruiter · reason required</span>
+            <span className="tabular">
+              Showing {filteredCandidates.length} applicants · Role Gates: Resume ≥ {resumeThreshold} · Interview ≥ {activeThreshold}
+            </span>
+          </div>
         </div>
       )}
 
@@ -380,6 +615,8 @@ export function JobCandidatesView({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onDecisionChange={handleDecisionChange}
+        resumeThreshold={resumeThreshold}
+        interviewThreshold={activeThreshold}
       />
     </div>
   );

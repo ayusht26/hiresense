@@ -46,6 +46,10 @@ export function AddJobModal({
   const [description, setDescription] = useState("");
   const [salary, setSalary] = useState("");
 
+  // Screening Thresholds (out of 100, default 60)
+  const [resumeThreshold, setResumeThreshold] = useState<number>(60);
+  const [interviewThreshold, setInterviewThreshold] = useState<number>(60);
+
   // Loading & Error States
   const [generating, setGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
@@ -124,8 +128,16 @@ export function AddJobModal({
         salary_currency: structured.salary?.currency || "INR",
         salary_period: structured.salary?.period || "month",
         salary_display: structured.salary?.display || salary || "Not specified",
+        resume_threshold: resumeThreshold,
+        interview_threshold: interviewThreshold,
         raw_input: description,
-        generated_posting: structured as unknown as Record<string, unknown>,
+        generated_posting: {
+          ...structured,
+          screening_thresholds: {
+            resume: resumeThreshold,
+            interview: interviewThreshold,
+          },
+        } as unknown as Record<string, unknown>,
         model_name: modelName,
         prompt_version: promptVersion,
         status,
@@ -367,6 +379,67 @@ export function AddJobModal({
               />
             </div>
 
+            {/* Screening Thresholds (out of 100) */}
+            <div className="rounded-[20px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] p-4 sm:p-5 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h4 className="text-[14px] font-[650] text-[#f5f5f5]">Screening Thresholds</h4>
+                  <p className="text-[12px] text-[#8a8a8a]">
+                    Set minimum score cutoffs (0–100) for resume screening and interview shortlisting.
+                  </p>
+                </div>
+                <span className="text-[11px] font-[600] px-2.5 py-0.5 rounded-full bg-[#262626] text-[#8a8a8a] border border-[rgba(255,255,255,0.06)]">
+                  Default: 60 / 100
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                {/* Resume Threshold */}
+                <div className="space-y-2 rounded-[16px] bg-[#141414] p-3.5 border border-[rgba(255,255,255,0.06)]">
+                  <div className="flex items-center justify-between text-[13px]">
+                    <span className="font-[600] text-[#f5f5f5]">Resume threshold</span>
+                    <span className="tabular font-mono text-[13px] font-[700] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      {resumeThreshold} / 100
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={resumeThreshold}
+                    onChange={(e) => setResumeThreshold(Number(e.target.value))}
+                    className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-[#262626] rounded-lg appearance-none"
+                  />
+                  <p className="text-[11px] text-[#707070] leading-snug">
+                    Candidates must pass this threshold on resume fit to unlock the AI interview.
+                  </p>
+                </div>
+
+                {/* Interview Threshold */}
+                <div className="space-y-2 rounded-[16px] bg-[#141414] p-3.5 border border-[rgba(255,255,255,0.06)]">
+                  <div className="flex items-center justify-between text-[13px]">
+                    <span className="font-[600] text-[#f5f5f5]">Interview threshold</span>
+                    <span className="tabular font-mono text-[13px] font-[700] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      {interviewThreshold} / 100
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={interviewThreshold}
+                    onChange={(e) => setInterviewThreshold(Number(e.target.value))}
+                    className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-[#262626] rounded-lg appearance-none"
+                  />
+                  <p className="text-[11px] text-[#707070] leading-snug">
+                    Benchmark score out of 100 to qualify candidates for recruiter selection.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Action Row */}
             <div className="pt-4 flex items-center justify-between border-t border-[rgba(255,255,255,0.08)]">
               <button
@@ -557,6 +630,44 @@ export function AddJobModal({
                     }
                     className="w-full h-10 px-3.5 rounded-[16px] bg-[#1f1f1f] text-[#f5f5f5] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#f5f5f5]"
                   />
+                </div>
+
+                {/* Screening Thresholds (out of 100) */}
+                <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[13px] font-[650] text-[#f5f5f5]">Screening Thresholds</label>
+                    <span className="text-[11px] text-[#707070]">0 to 100 (Default 60)</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5 rounded-[12px] bg-[#141414] p-3 border border-[rgba(255,255,255,0.06)]">
+                      <div className="flex items-center justify-between text-[12px]">
+                        <span className="font-[600] text-[#8a8a8a]">Resume threshold</span>
+                        <span className="tabular font-mono text-[12px] font-[700] text-emerald-400">{resumeThreshold}/100</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={resumeThreshold}
+                        onChange={(e) => setResumeThreshold(Number(e.target.value))}
+                        className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-[#262626] rounded-lg appearance-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5 rounded-[12px] bg-[#141414] p-3 border border-[rgba(255,255,255,0.06)]">
+                      <div className="flex items-center justify-between text-[12px]">
+                        <span className="font-[600] text-[#8a8a8a]">Interview threshold</span>
+                        <span className="tabular font-mono text-[12px] font-[700] text-emerald-400">{interviewThreshold}/100</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={interviewThreshold}
+                        onChange={(e) => setInterviewThreshold(Number(e.target.value))}
+                        className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-[#262626] rounded-lg appearance-none"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* About Role */}
@@ -775,6 +886,19 @@ export function AddJobModal({
                     <span>•</span>
                     <span className="font-[600] text-[#f5f5f5]">
                       {structured.salary?.display || "Salary not specified"}
+                    </span>
+                  </div>
+
+                  {/* Screening Thresholds Badge */}
+                  <div className="mt-3 flex items-center gap-2 p-2.5 rounded-[16px] bg-[#141414] border border-[rgba(255,255,255,0.06)] text-[12px] flex-wrap">
+                    <span className="font-[600] text-[#f5f5f5]">Screening Gates:</span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-emerald-400 border border-emerald-500/20">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <span>Resume ≥ {resumeThreshold}/100</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1a1a1a] text-emerald-400 border border-emerald-500/20">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <span>Interview ≥ {interviewThreshold}/100</span>
                     </span>
                   </div>
                 </div>

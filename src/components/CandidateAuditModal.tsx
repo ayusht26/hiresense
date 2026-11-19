@@ -22,6 +22,8 @@ interface CandidateAuditModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDecisionChange?: (candidateId: string, decision: "shortlisted" | "rejected" | "under_review") => void;
+  resumeThreshold?: number;
+  interviewThreshold?: number;
 }
 
 export function CandidateAuditModal({
@@ -30,6 +32,8 @@ export function CandidateAuditModal({
   isOpen,
   onClose,
   onDecisionChange,
+  resumeThreshold = 60,
+  interviewThreshold = 60,
 }: CandidateAuditModalProps) {
   const [activeTab, setActiveTab] = useState<"overview" | "resume" | "interview">("overview");
   const [currentDecision, setCurrentDecision] = useState<"shortlisted" | "rejected" | "under_review">(
@@ -105,63 +109,130 @@ export function CandidateAuditModal({
         {/* Dual-Score Showcase Card */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {/* Resume Match Score */}
-          <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] p-4 flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-1.5 text-[12px] font-[600] text-[#8a8a8a] mb-1">
-                <FileText size={14} />
-                <span>Resume Match</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[32px] font-[650] leading-none text-[#f5f5f5] tabular">
-                  {candidate.resumeScore}
-                </span>
-                <span className="text-[14px] text-[#707070] font-[450]">/ 100</span>
-              </div>
-              <span className="mt-1 inline-block text-[11px] text-[#8a8a8a]">
-                {candidate.resumeScore >= 85 ? "High compatibility" : "Standard requirement fit"}
-              </span>
-            </div>
-
-            {/* Visual Mini Dial */}
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[rgba(255,255,255,0.1)]">
-              <span className="text-[13px] font-[700] text-[#f5f5f5]">{candidate.resumeScore}%</span>
-            </div>
-          </div>
-
-          {/* AI Interview Score */}
-          <div className="rounded-[16px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] p-4 flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-1.5 text-[12px] font-[600] text-[#8a8a8a] mb-1">
-                <Mic size={14} />
-                <span>AI Interview Score</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                {candidate.interviewScore !== null ? (
-                  <>
-                    <span className="text-[32px] font-[650] leading-none text-[#f5f5f5] tabular">
-                      {candidate.interviewScore}
+          {(() => {
+            const isResumePassed = candidate.resumeScore >= resumeThreshold;
+            return (
+              <div
+                className={`rounded-[16px] border p-4 flex items-center justify-between transition-colors ${
+                  isResumePassed
+                    ? "bg-emerald-500/[0.04] border-emerald-500/25"
+                    : "bg-rose-500/[0.03] border-rose-500/20"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center gap-1.5 text-[12px] font-[600] text-[#8a8a8a] mb-1">
+                    <FileText size={14} />
+                    <span>Resume Match</span>
+                    <span
+                      className={`ml-1 text-[10px] font-[600] px-2 py-0.5 rounded-full border ${
+                        isResumePassed
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                          : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                      }`}
+                    >
+                      {isResumePassed ? "Threshold Met" : "Below Threshold"}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span
+                      className={`text-[32px] font-[650] leading-none tabular ${
+                        isResumePassed ? "text-emerald-400" : "text-rose-400"
+                      }`}
+                    >
+                      {candidate.resumeScore}
                     </span>
                     <span className="text-[14px] text-[#707070] font-[450]">/ 100</span>
-                  </>
+                  </div>
+                  <span className="mt-1 inline-block text-[11px] text-[#8a8a8a]">
+                    Required cutoff: ≥ {resumeThreshold} / 100
+                  </span>
+                </div>
+
+                {/* Visual Mini Dial */}
+                <div
+                  className={`relative flex h-14 w-14 items-center justify-center rounded-full border-2 ${
+                    isResumePassed
+                      ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10"
+                      : "border-rose-500/30 text-rose-400 bg-rose-500/10"
+                  }`}
+                >
+                  <span className="text-[13px] font-[700]">{candidate.resumeScore}%</span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* AI Interview Score */}
+          {(() => {
+            const hasInterview = candidate.interviewScore !== null;
+            const isInterviewPassed = hasInterview && (candidate.interviewScore ?? 0) >= interviewThreshold;
+            return (
+              <div
+                className={`rounded-[16px] border p-4 flex items-center justify-between transition-colors ${
+                  !hasInterview
+                    ? "bg-[#1a1a1a] border-[rgba(255,255,255,0.08)]"
+                    : isInterviewPassed
+                      ? "bg-emerald-500/[0.04] border-emerald-500/25"
+                      : "bg-rose-500/[0.03] border-rose-500/20"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center gap-1.5 text-[12px] font-[600] text-[#8a8a8a] mb-1">
+                    <Mic size={14} />
+                    <span>AI Interview Score</span>
+                    {hasInterview && (
+                      <span
+                        className={`ml-1 text-[10px] font-[600] px-2 py-0.5 rounded-full border ${
+                          isInterviewPassed
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                        }`}
+                      >
+                        {isInterviewPassed ? "Qualified" : "Below Cutoff"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    {hasInterview ? (
+                      <>
+                        <span
+                          className={`text-[32px] font-[650] leading-none tabular ${
+                            isInterviewPassed ? "text-emerald-400" : "text-rose-400"
+                          }`}
+                        >
+                          {candidate.interviewScore}
+                        </span>
+                        <span className="text-[14px] text-[#707070] font-[450]">/ 100</span>
+                      </>
+                    ) : (
+                      <span className="text-[20px] font-[600] text-[#707070]">Test Pending</span>
+                    )}
+                  </div>
+                  <span className="mt-1 inline-block text-[11px] text-[#8a8a8a]">
+                    {hasInterview
+                      ? `Screening cutoff: ≥ ${interviewThreshold} / 100`
+                      : "Candidate has not taken interview"}
+                  </span>
+                </div>
+
+                {hasInterview ? (
+                  <div
+                    className={`relative flex h-14 w-14 items-center justify-center rounded-full border-2 ${
+                      isInterviewPassed
+                        ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10"
+                        : "border-rose-500/30 text-rose-400 bg-rose-500/10"
+                    }`}
+                  >
+                    <span className="text-[13px] font-[700]">{candidate.interviewScore}</span>
+                  </div>
                 ) : (
-                  <span className="text-[20px] font-[600] text-[#707070]">Test Pending</span>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-dashed border-[rgba(255,255,255,0.15)] text-[#5c5c5c]">
+                    <Clock size={16} />
+                  </div>
                 )}
               </div>
-              <span className="mt-1 inline-block text-[11px] text-[#8a8a8a]">
-                {candidate.interviewScore !== null ? candidate.fitVerdict : "Candidate has not taken interview"}
-              </span>
-            </div>
-
-            {candidate.interviewScore !== null ? (
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[rgba(255,255,255,0.18)] bg-[#222]">
-                <span className="text-[13px] font-[700] text-[#f5f5f5]">{candidate.interviewScore}</span>
-              </div>
-            ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-dashed border-[rgba(255,255,255,0.15)] text-[#5c5c5c]">
-                <Clock size={16} />
-              </div>
-            )}
-          </div>
+            );
+          })()}
         </div>
 
         {/* Audit Tabs */}

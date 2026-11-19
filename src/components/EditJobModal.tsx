@@ -45,6 +45,8 @@ export function EditJobModal({ job, isOpen, onClose, onSuccess }: EditJobModalPr
   const [status, setStatus] = useState<"draft" | "published">(
     job.status === "draft" ? "draft" : "published",
   );
+  const [resumeThreshold, setResumeThreshold] = useState<number>(job.resume_threshold ?? 60);
+  const [interviewThreshold, setInterviewThreshold] = useState<number>(job.interview_threshold ?? 60);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -75,7 +77,15 @@ export function EditJobModal({ job, isOpen, onClose, onSuccess }: EditJobModalPr
         salary_currency: structured.salary?.currency || "INR",
         salary_period: structured.salary?.period || "month",
         salary_display: structured.salary?.display || "Not specified",
-        generated_posting: structured as unknown as Record<string, unknown>,
+        resume_threshold: resumeThreshold,
+        interview_threshold: interviewThreshold,
+        generated_posting: {
+          ...structured,
+          screening_thresholds: {
+            resume: resumeThreshold,
+            interview: interviewThreshold,
+          },
+        } as unknown as Record<string, unknown>,
         status,
       };
 
@@ -332,6 +342,67 @@ export function EditJobModal({ job, isOpen, onClose, onSuccess }: EditJobModalPr
                 <option value="draft">Draft (hidden from students)</option>
                 <option value="published">Published (visible in feed)</option>
               </select>
+            </div>
+          </div>
+
+          {/* Screening Thresholds (out of 100) */}
+          <div className="rounded-[18px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-[13px] font-[650] text-[#f5f5f5]">Screening Thresholds</h4>
+                <p className="text-[12px] text-[#8a8a8a]">
+                  Candidate score cutoffs (0–100) for passing resume screening and interview qualification.
+                </p>
+              </div>
+              <span className="text-[11px] font-[600] px-2.5 py-0.5 rounded-full bg-[#262626] text-[#8a8a8a] border border-[rgba(255,255,255,0.06)]">
+                Default: 60 / 100
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {/* Resume Threshold */}
+              <div className="space-y-1.5 rounded-[14px] bg-[#141414] p-3 border border-[rgba(255,255,255,0.06)]">
+                <div className="flex items-center justify-between text-[12px]">
+                  <span className="font-[600] text-[#f5f5f5]">Resume screening threshold</span>
+                  <span className="tabular font-mono text-[12px] font-[700] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    {resumeThreshold} / 100
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={resumeThreshold}
+                  onChange={(e) => setResumeThreshold(Number(e.target.value))}
+                  className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-[#262626] rounded-lg appearance-none"
+                />
+                <p className="text-[11px] text-[#707070] leading-snug">
+                  Candidates must meet this score on resume matching to be allowed to take the interview.
+                </p>
+              </div>
+
+              {/* Interview Threshold */}
+              <div className="space-y-1.5 rounded-[14px] bg-[#141414] p-3 border border-[rgba(255,255,255,0.06)]">
+                <div className="flex items-center justify-between text-[12px]">
+                  <span className="font-[600] text-[#f5f5f5]">Interview screening threshold</span>
+                  <span className="tabular font-mono text-[12px] font-[700] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    {interviewThreshold} / 100
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={interviewThreshold}
+                  onChange={(e) => setInterviewThreshold(Number(e.target.value))}
+                  className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-[#262626] rounded-lg appearance-none"
+                />
+                <p className="text-[11px] text-[#707070] leading-snug">
+                  Minimum AI interview score for candidates to qualify for recruiter selection.
+                </p>
+              </div>
             </div>
           </div>
 

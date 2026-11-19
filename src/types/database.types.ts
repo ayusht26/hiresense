@@ -82,6 +82,8 @@ export type Database = {
           title: string;
           updated_at: string;
           work_mode: string | null;
+          resume_threshold: number;
+          interview_threshold: number;
         };
         Insert: {
           company_name: string;
@@ -104,6 +106,8 @@ export type Database = {
           title: string;
           updated_at?: string;
           work_mode?: string | null;
+          resume_threshold?: number;
+          interview_threshold?: number;
         };
         Update: {
           company_name?: string;
@@ -126,6 +130,8 @@ export type Database = {
           title?: string;
           updated_at?: string;
           work_mode?: string | null;
+          resume_threshold?: number;
+          interview_threshold?: number;
         };
         Relationships: [
           {
@@ -268,4 +274,8 @@ export type StructuredJobListing = {
   qualifications: Qualifications;
   tech_stack: TechStackItem[];
   benefits: string[];
+  screening_thresholds?: {
+    resume: number;
+    interview: number;
+  };
 };
