@@ -1,0 +1,185 @@
+
+AI-Powered Recruitment & Interview Platform
+1. Summary
+The proposed platform is an end-to-end AI-assisted recruitment system connecting companies and applicants. A company creates a job listing with role description, required skills, qualifications, experience, responsibilities and configurable screening rules. Applicants upload a resume and complete an application. The platform parses the resume, extracts structured candidate information, compares it with the job requirements, produces a transparent compatibility score and explains the match.
+Candidates who meet the company-defined screening threshold can proceed to an AI interview. The interview engine generates role-specific questions, asks follow-up questions about projects and resume claims, accepts English/Hindi or code-mixed speech, and evaluates the transcript and interview performance. Optional computer-vision signals can detect whether the candidate is repeatedly looking away from the camera and generate a proctoring flag. The final report combines job-fit evidence and interview evidence while keeping the employer in the human decision loop.
+2. Problem Statement
+Recruiters may receive large volumes of resumes for a single opening. Manual screening is time-consuming and can be inconsistent. Applicants also receive limited feedback about why a resume does or does not match a role. Interviews add another operational bottleneck, especially when companies need to screen many candidates.
+The project addresses this with three connected stages:
+AI-assisted resume and job-description matching.
+Configurable company screening and human shortlist controls.
+AI-led multilingual interview with structured evaluation and an evidence-based report.
+3. Core User Roles
+Company / Recruiter: create company profile, publish jobs, define mandatory/preferred requirements, set screening thresholds, review candidate profiles, manually shortlist candidates, schedule AI interviews, inspect reports.
+Applicant: create profile, upload resume, review extracted information, apply, give consent for AI processing, select interview language, complete interview and view permitted feedback.
+Platform Administrator: manage organizations, authentication, model/API configuration, audit logs, moderation, retention policies and system health.
+4. End-to-End Workflow
+Stage 1 — Job Creation
+Recruiter enters title, department, location/work mode, experience, education, mandatory skills, preferred skills, responsibilities and job-specific questions.
+The system converts the job description into a structured Job Requirement Profile.
+Each requirement receives a type: mandatory, preferred, contextual, or informational.
+Recruiter can configure a screening threshold such as 70/100, but the threshold should be treated as a workflow rule rather than a claim that a score is an objective measure of candidate quality.
+Stage 2 — Resume Submission and AI Screening
+Candidate uploads PDF/DOCX resume.
+Document parser extracts text and layout where available.
+PII fields are identified and protected; the matching model should not use protected characteristics or irrelevant personal attributes.
+Resume parser extracts education, skills, experience, projects, certifications, achievements and job history.
+Skill aliases are normalized: e.g., 'JS' → 'JavaScript', 'Postgres' → 'PostgreSQL'.
+Resume and job profile are embedded into a shared semantic space.
+The scoring engine calculates requirement-level evidence and an overall compatibility score.
+The report shows matched skills, missing skills, experience fit, education fit, project relevance and evidence snippets.
+Stage 3 — Screening
+Apply company-configured hard filters only where the job genuinely requires them.
+Apply the configurable score threshold.
+Allow recruiter override/manual selection.
+Record the reason for every automated filter or recruiter override for auditability.
+Stage 4 — AI Interview
+Candidate grants camera/microphone permissions and accepts an interview-processing notice.
+System asks preferred language: English, Hindi, or supported code-mixed mode.
+Interview planner creates a question set from the job, resume and projects.
+Interviewer asks a mixture of introduction, resume verification, technical, situational and role-specific questions.
+Candidate answers by voice/video.
+Speech-to-text transcribes the response. For Indian multilingual speech, Sarvam's Saaras family supports English and Indian languages, including code-mixed modes. citeturn0search0turn0search2
+LLM evaluates the semantic content of answers against a rubric and generates the next question.
+Optional vision module calculates camera-gaze/face-presence signals and generates non-diagnostic proctoring events.
+At the end, the platform produces a structured interview report.
+5. Resume Matching Methodology
+Requirement extraction
+Convert a job description into structured requirements: role, hard skills, soft skills, education, experience, responsibilities, domain knowledge and preferred qualifications. Each requirement should have a weight and mandatory flag.
+Resume extraction
+Extract text, then identify sections such as Summary, Skills, Experience, Projects, Education and Certifications. Extract entities and normalize skills. Preserve source spans so every important score can be explained by evidence from the resume.
+Hybrid scoring
+Do not rely on one cosine similarity value. A recommended prototype formula is:
+Match Score = 0.40 × weighted skill match + 0.20 × experience fit + 0.15 × project/role relevance + 0.10 × education/certification fit + 0.10 × responsibility semantic match + 0.05 × evidence quality.
+The weights should be configurable per job family and validated against human-reviewed examples. Mandatory requirements can be handled as gates rather than hidden penalties.
+Explanation
+Matched: Python, FastAPI, PostgreSQL, Docker.
+Partially matched: cloud deployment experience.
+Missing/unclear: Kubernetes.
+Evidence: show the resume section and text span supporting each extracted skill.
+Do not infer a skill solely because two technologies are related.
+
+
+
+
+
+
+
+
+6. AI Interview Methodology
+Question generation
+Opening: candidate introduction and role motivation.
+Resume verification: questions about selected projects, responsibilities and technical decisions.
+Technical: questions generated from mandatory skills and seniority.
+Scenario: job-specific problem solving.
+Behavioral: teamwork, communication and conflict scenarios.
+Follow-up: ask deeper questions when an answer is vague or claims an important skill.
+Interview state machine
+Use deterministic states such as INTRO → RESUME → TECHNICAL → PROJECT → SITUATIONAL → FOLLOW-UP → CLOSING. The LLM supplies question wording and evaluation, but the application controls allowed transitions, maximum duration, question count and prohibited topics.
+Multilingual flow
+At interview start ask the candidate to select English, Hindi, or a supported language. Allow switching during the interview. Saaras supports transcription modes including code-mixed output; Bulbul supports English, Hindi and other Indian languages for TTS. citeturn0search1turn0search8
+Interview scoring
+Technical correctness: 35%
+Problem solving/reasoning: 20%
+Project understanding: 15%
+Answer relevance/completeness: 10%
+Communication structure/clarity: 10%
+Role-specific behavioral evidence: 10%
+These are proposed prototype weights, not validated measures. For a real deployment, weights should be tuned and validated against a human-created rubric for each job family.
+
+
+
+
+7. Camera and Gaze Monitoring
+Use face detection/landmarks to estimate whether a face is present and whether the head/gaze direction is roughly toward the camera. Store event-level signals rather than continuous video whenever possible.
+Face absent for > N seconds → warning.
+Repeated large head/gaze deviation → soft warning.
+High cumulative off-camera duration → flag for human review.
+Multiple faces detected → flag for review.
+Camera disabled → interview pause/technical warning.
+Avoid interpreting gaze as a psychological trait. Looking away can be caused by disability, assistive technology, reading, network issues, screen placement, cultural behavior or normal thinking. The safest product behavior is to report observable events, not claims such as 'dishonest' or 'low confidence'. Accessibility accommodations should be supported; algorithmic tools can disadvantage applicants with disabilities if their signals are used without accommodation. citeturn1search3
+8. Scoring and Report Design
+The platform should separate three concepts: eligibility, job compatibility, and interview evidence. A single number should never hide the reasons behind it.
+Eligibility: mandatory requirements passed/unclear.
+Job compatibility: 0–100 compatibility score.
+Interview evidence: rubric-based component scores.
+Confidence/uncertainty: how complete and reliable the available evidence is.
+Human review: recruiter decision and notes.
+Recommended report sections: Overall Match, Requirement Matrix, Resume Strengths, Gaps, Project Relevance, Interview Summary, Technical Evidence, Communication Evidence, Proctoring Events, Questions to Verify, Model/Prompt Version, and Audit Trail.
+
+
+
+
+
+
+9. Dataset Strategy
+Public datasets for prototyping
+Resume Entities for NER (DataTurks/Kaggle): annotated resume entities for resume NER experiments. 
+Resume NER Training Dataset on Hugging Face: 22,855 training examples with entities including skills, education, experience, organization and contact information. Verify license/usage terms before commercial use. 
+Indian Job Market Dataset 2025: a Kaggle dataset describing 97k+ India-focused job listings with titles, skills, experience and job-description fields; its listed license is CC BY-NC-SA 4.0
+Data Science Job Market dataset: 7,000+ job opportunities with title, location, experience, job description and skills; listed as CC0 on its Kaggle page. 
+CareerCorpus resume dataset: 302 anonymized, expert-annotated resumes across six categories, useful as a small evaluation set
+Build your own project dataset
+For the final system, public datasets are not enough. Create a consented evaluation dataset containing anonymized resumes, job descriptions, requirement annotations, resume-to-job relevance labels, interview questions, answer-quality rubrics and manually reviewed interview transcripts.
+10. Data Preprocessing
+File validation: verify PDF/DOCX MIME type, size and malware scanning.
+Text extraction: preserve page/section boundaries.
+OCR: deskew, denoise and extract text from scanned resumes.
+Normalization: whitespace, Unicode, punctuation and common OCR errors.
+PII handling: identify email, phone, address and other direct identifiers.
+Section segmentation: detect Summary, Skills, Experience, Projects, Education, etc.
+Entity extraction: skills, organizations, dates, titles, education and certifications.
+Skill normalization: aliases, abbreviations and canonical taxonomy.
+Date normalization: convert ranges into months/years of experience.
+Deduplication: remove repeated resumes/jobs and near-duplicate text.
+Chunking: split long resumes/jobs while retaining section metadata.
+Embedding: encode chunks and requirement statements.
+Label creation: human relevance labels for validation/training.
+
+
+
+
+
+
+11. Model Evaluation
+Resume NER: precision, recall, F1 per entity type.
+Skill extraction: exact match and normalized-skill F1.
+Job-resume matching: Precision, Recall, nDCG and pairwise accuracy.
+Eligibility rules: false-positive and false-negative rates.
+Interview transcription: Word Error Rate/CER, with separate evaluation for Hindi, English and code-mixed speech.
+Interview scoring: agreement with blinded human raters; report correlation/agreement rather than treating the LLM score as ground truth.
+Gaze/proctoring: precision/recall on manually labeled events, plus false-positive rate under different lighting, camera positions and accessibility conditions.
+System: latency, interview turn time, API failure rate and cost per completed interview.
+12. Preliminary Results — Proposed Prototype Targets
+Because the platform has not yet been implemented and benchmarked in this project, the following are target/expected preliminary results, not measured results.
+Resume parsing: extract the majority of standard resume fields into a structured JSON profile.
+Matching: produce a requirement-level match matrix instead of a black-box score.
+Screening: allow recruiters to reproduce the same screening rule on the same candidate/job pair.
+Interview: complete a 10–20 minute adaptive interview with English/Hindi code-mixed input.
+Speech: preserve code-mixed technical terms such as Python, React, SQL and Kubernetes during transcription.
+Vision: detect basic face-presence and repeated off-camera events under controlled webcam conditions.
+Reporting: generate an auditable report containing model versions, evidence, component scores and human-review fields.
+After the MVP, replace these targets with measured metrics from a held-out evaluation set.
+
+
+
+
+
+
+
+
+
+
+
+
+13. Review Papers
+
+1. Learning to Match Jobs with Resumes from Sparse Interaction Data using Multi-View Co-Teaching Network
+Authors: Shuqing Bian, Xu Chen, Wayne Xin Zhao, Kun Zhou, Yupeng Hou, Yang Song, Tao Zhang, Ji-Rong Wen
+https://arxiv.org/abs/2009.13299
+
+2. ConFit: Improving Resume-Job Matching using Data Augmentation and Contrastive Learning
+Authors: Xiao Yu, Jinzhong Zhang, Zhou Yu
+https://dblp.org/rec/conf/recsys/YuZY24.html
+
+

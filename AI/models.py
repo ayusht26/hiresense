@@ -47,3 +47,57 @@ class GenerateJobResponse(BaseModel):
     model_name: str
     prompt_version: str
 
+
+# =========================================================
+# Deep Learning Endpoints Data Models
+# =========================================================
+
+class ExtractEntitiesRequest(BaseModel):
+    text: str = Field(..., min_length=2, description="Raw text snippet or resume section")
+
+
+class EntitySpan(BaseModel):
+    text: str
+    label: str
+    start: int
+    end: int
+
+
+class ExtractEntitiesResponse(BaseModel):
+    skills: List[str]
+    colleges: List[str]
+    experience: List[str]
+    entities: List[EntitySpan]
+
+
+class CandidateMatchProfile(BaseModel):
+    skills: List[str] = Field(default_factory=list)
+    years_experience: float = 0.0
+    education_tier: int = 2  # 1: Diploma, 2: Bachelor, 3: Master, 4: PhD
+    prev_roles_count: int = 1
+
+
+class JobMatchProfile(BaseModel):
+    required_skills: List[str] = Field(default_factory=list)
+    min_experience: float = 0.0
+    seniority_tier: int = 2  # 1: Jr, 2: Mid, 3: Sr, 4: Lead
+    salary_band: float = 0.5
+
+
+class TwoTowerMatchRequest(BaseModel):
+    candidate: CandidateMatchProfile
+    job: JobMatchProfile
+
+
+class TwoTowerMatchResponse(BaseModel):
+    score: float
+    cosine_similarity: float
+    fit_verdict: str
+    matched_skills: List[str]
+    missing_skills: List[str]
+
+
+class DeepLearningPipelineRequest(BaseModel):
+    resume_text: str = Field(..., min_length=5, description="Full resume text")
+    job: JobMatchProfile
+
